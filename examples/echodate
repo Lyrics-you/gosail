@@ -1,0 +1,8 @@
+#!/bin/bash
+ 
+#echo time
+for((i=0;i<3;i++))
+do
+    sleep 1
+    echo $(date +"%Y-%m-%d %H:%M:%S")
+done

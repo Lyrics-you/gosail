@@ -1,0 +1,3 @@
+cd /etc/sysconfig/network-scripts/
+ls
+date
