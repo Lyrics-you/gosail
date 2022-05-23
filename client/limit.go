@@ -5,6 +5,7 @@ import (
 	"gosail/logger"
 	"gosail/model"
 	"gosail/ssh"
+	"sync"
 )
 
 var log = logger.Logger()
@@ -53,40 +54,44 @@ func LimitShhWithChan(clientConfig *model.ClientConfig) ([]model.SSHResult, erro
 	return sshResults, nil
 }
 
-// todo : withgroup control the number of concurrent visits
+func clinetSSHWithGroup(host model.SSHHost, clientConfig *model.ClientConfig, ch chan model.SSHResult, wg *sync.WaitGroup) error {
+	ssh.Dossh(host.Username, host.Password, host.Host, host.Key, host.CmdList, host.Port,
+		clientConfig.TimeLimit, clientConfig.CipherList, clientConfig.KeyExchangeList, host.LinuxMode, ch)
+	wg.Done()
+	return nil
+}
 
-// func clinetSSHWithGroup(host *model.SSHHost, clientConfig *model.ClientConfig, ch chan model.SSHResult, wg *sync.WaitGroup) error {
-// 	defer wg.Done()
+func LimitShhWithGroup(clientConfig *model.ClientConfig) ([]model.SSHResult, error) {
+	var wg sync.WaitGroup
+	wg.Add(len(clientConfig.SshHosts))
+	chs := make([]chan model.SSHResult, len(clientConfig.SshHosts))
 
-// 	err := ssh.Dossh(host.Username, host.Password, host.Host, host.Key, host.CmdList, host.Port,
-// 		clientConfig.TimeLimit, clientConfig.CipherList, clientConfig.KeyExchangeList, host.LinuxMode,
-// 		ch)
+	for i, host := range clientConfig.SshHosts {
+		chs[i] = make(chan model.SSHResult, 1)
 
-// 	if err != nil {
-// 		fmt.Printf("ssh connect error, %v\n", err)
-// 		return err
-// 	}
-// 	return nil
-// }
+		err := checkParameterUH(&host)
+		if err != nil {
+			log.Warnf("%s connect error, %v", host.Host, err)
+			chs[i] <- model.SSHResult{
+				Host:    host.Host,
+				Success: false,
+				Result:  fmt.Sprintf("%s connect error, %v\n", host.Host, err),
+			}
+		} else {
+			go clinetSSHWithGroup(host, clientConfig, chs[i], &wg)
+		}
 
-// func LimitShhWithGroup(clientConfig *model.ClientConfig) []model.SSHResult {
-// 	var wg sync.WaitGroup
-// 	wg.Add(len(clientConfig.SshHosts))
-// 	chs := make([]chan model.SSHResult, len(clientConfig.SshHosts))
+	}
 
-// 	for i, host := range clientConfig.SshHosts {
-// 		go clinetSSHWithGroup(&host, clientConfig, chs[i], &wg)
-// 	}
+	sshResults := []model.SSHResult{}
 
-// 	sshResults := []model.SSHResult{}
+	for _, ch := range chs {
+		res := <-ch
+		if res.Result != "" {
+			sshResults = append(sshResults, res)
+		}
 
-// 	for _, ch := range chs {
-// 		res := <-ch
-// 		if res.Result != "" {
-// 			sshResults = append(sshResults, res)
-// 		}
-
-// 	}
-// 	wg.Wait()
-// 	return sshResults
-// }
+	}
+	// wg.Wait()
+	return sshResults, nil
+}

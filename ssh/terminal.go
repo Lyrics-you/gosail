@@ -4,6 +4,7 @@ import (
 	"gosail/logger"
 	"os"
 
+	"github.com/nathan-fiscaletti/consolesize-go"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -13,13 +14,15 @@ var log = logger.Logger()
 func setPseudoTerminal(session *ssh.Session) error {
 	// set up terminal modes
 	modes := ssh.TerminalModes{
-		ssh.ECHO:          1,     // enable echoing
+		ssh.ECHO: 1, // enable echoing
+		// ssh.ECHOCTL:       1,
 		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
 		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
 	}
 
 	// request pseudo terminal
-	if err := session.RequestPty("xterm", 32, 160, modes); err != nil {
+	width, height := consolesize.GetConsoleSize()
+	if err := session.RequestPty("xterm", height, width, modes); err != nil {
 		return err
 	}
 	return nil
@@ -33,26 +36,28 @@ func GetInteractiveTerminal(username, password, host, key string, port int, ciph
 	}
 	defer session.Close()
 
-	defer session.Close()
-
-	fd := int(os.Stdin.Fd())
-	oldState, err := terminal.MakeRaw(fd)
-	if err != nil {
-		panic(err)
-	}
-	defer terminal.Restore(fd, oldState)
-
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
 	session.Stdin = os.Stdin
 
 	modes := ssh.TerminalModes{
-		ssh.ECHO:          1,     // enable echoing
+		ssh.ECHO: 1, // enable echoing
+		// ssh.ECHOCTL:       0,
 		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
 		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
 	}
 
-	if err := session.RequestPty("xterm", 32, 160, modes); err != nil {
+	// Get the current terminal file descriptor for post-interaction recovery
+	fd := int(os.Stdin.Fd())
+	oldState, err := terminal.MakeRaw(fd)
+	if err != nil {
+		log.Panicf("session.os.stdin err : %v", err)
+	}
+	defer terminal.Restore(fd, oldState)
+
+	width, height := consolesize.GetConsoleSize()
+
+	if err := session.RequestPty("xterm", height, width, modes); err != nil {
 		log.Errorf("session.RequestPty err: %v", err)
 		return err
 	}

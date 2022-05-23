@@ -12,6 +12,7 @@ A tool for batch execution of shh commands, programmed with go.
 - 输入参数
 - 输出格式
 - 颜色支持
+- 输出适应窗口大小
 
 命令：**gosail位置** + **主机IP**（-hosts\\-hostsfile\ips\ipfiles) "对应IP填写方式" + **命令**（-cmdline\-cmdfile） "对应命令填写方式" + **用户**（-u,IP方式为user@hosts,**可省略**） + **密码**（-p,有密钥可以**省略**） + **密钥位置**（-k,有密码或者默认密钥位置,**可省略**） + **其他指令**（看需求）
 
@@ -293,3 +294,5 @@ Enter the 0~1 to select the host, other input will exit!
 1 : 192.168.245.132
 Input id :
 ```
+
+目前已知问题，第二次及之后选择需要先输入回车

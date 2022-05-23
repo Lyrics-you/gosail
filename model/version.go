@@ -3,7 +3,7 @@ package model
 // version history:
 // 0.1.0 : first version
 // 0.2.0 : functional testing
-// 0.3.0 : no-Secret sign-in : ues default key path "UserHomeDir/.ssh/id_rsa"
+// 0.3.0 : no-secret sign-in : ues default key path "UserHomeDir/.ssh/id_rsa"
 // 0.3.1 : fix ipfile can not use no-secert sign-in
 // 0.3.2 : add ssh/terminal.go
 // 0.4.0 : enter the id to select the host login
@@ -14,7 +14,13 @@ package model
 // 0.4.5 : can sikp unconnect host
 // 0.5.0 : collated log output
 // 0.5.1 : fix ipfiles CIDR'problem
-// todo : dynamic display of the command execution process
+// 0.6.1 : server list : show the host status
+// 0.6.2 : change terminal size , not dynamically
+// 0.6.3 : limit ssh connect by WaitGroup
+// 0.6.4 : Simplify output content
+
+// todo : select host : fix selecting host again requires an additional character
+// furture : dynamic display of the command execution process
 const (
-	VERSION = "0.5.1"
+	VERSION = "0.6.4"
 )

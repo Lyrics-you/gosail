@@ -7,11 +7,11 @@
             "CmdLine": "ls"
         },
         {
-            "Host": "192.168.245.132",
+            "Host": "192.168.245.131",
             "Port": 22,
             "Username": "root",
             "Password": "qwerty",
-            "CmdFile": "cmdfile"
+            "CmdLine": "date"
         }
     ],
     "Global": {

@@ -10,6 +10,7 @@ import (
 	"gosail/ssh"
 	"gosail/utils"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -172,7 +173,7 @@ func main() {
 		KeyExchangeList: keyExchangeList,
 	}
 
-	sshResults, _ := client.LimitShhWithChan(clientConfig)
+	sshResults, _ := client.LimitShhWithGroup(clientConfig)
 
 	endTime := time.Now()
 	log.Infof("gosail finished. Process time %s. Number of active ip is %d", endTime.Sub(startTime), len(sshHosts))
@@ -200,11 +201,26 @@ func main() {
 	for _, sshResult := range sshResults {
 		fmt.Println("> host: ", sshResult.Host)
 		fmt.Println("=============== Result ===============")
+		if !*linuxMode && sshResult.Success {
+			sshResult.Result = simpleline(sshResult.Result, len(cmdList)+2, 3)
+		}
 		fmt.Println(sshResult.Result)
+
 	}
 	fmt.Println("############### Finshed ###############")
 
 	if *selection {
-		client.LoginHostByID(sshHosts)
+		client.LoginHostByID(sshHosts, sshResults)
 	}
+}
+
+func simpleline(str string, n int, m int) string {
+	for i := 0; i < n; i++ {
+		str = str[strings.Index(str, "\n")+1:]
+	}
+	for i := 0; i < m; i++ {
+		str = str[:strings.LastIndex(str, "\n")]
+	}
+	str += "\n"
+	return str
 }
