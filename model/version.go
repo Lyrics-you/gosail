@@ -17,10 +17,11 @@ package model
 // 0.6.1 : server list : show the host status
 // 0.6.2 : change terminal size , not dynamically
 // 0.6.3 : limit ssh connect by WaitGroup
-// 0.6.4 : Simplify output content
+// 0.6.4 : simplify output content
+// 0.6.5 : adjusted server list
+// 0.6.6 : select host : fix selecting host again requires an additional character
 
-// todo : select host : fix selecting host again requires an additional character
 // furture : dynamic display of the command execution process
 const (
-	VERSION = "0.6.4"
+	VERSION = "0.6.6"
 )

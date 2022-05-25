@@ -40,6 +40,36 @@ func GetInteractiveTerminal(username, password, host, key string, port int, ciph
 	session.Stderr = os.Stderr
 	session.Stdin = os.Stdin
 
+	// stdin, err := session.StdinPipe()
+	// if err != nil {
+	// 	return err
+	// }
+	// stdout, err := session.StdoutPipe()
+	// if err != nil {
+	// 	return err
+	// }
+	// stderr, err := session.StderrPipe()
+
+	// go io.Copy(os.Stderr, stderr)
+	// go io.Copy(os.Stdout, stdout)
+	// go func() {
+	// 	buf := make([]byte, 128)
+	// 	for {
+	// 		n, err := os.Stdin.Read(buf)
+	// 		if err != nil {
+	// 			fmt.Println(err)
+	// 			return
+	// 		}
+	// 		if n > 0 {
+	// 			_, err = stdin.Write(buf[:n])
+	// 			if err != nil {
+	// 				fmt.Println("Input Id: ")
+	// 				return
+	// 			}
+	// 		}
+	// 	}
+	// }()
+
 	modes := ssh.TerminalModes{
 		ssh.ECHO: 1, // enable echoing
 		// ssh.ECHOCTL:       0,
@@ -51,7 +81,7 @@ func GetInteractiveTerminal(username, password, host, key string, port int, ciph
 	fd := int(os.Stdin.Fd())
 	oldState, err := terminal.MakeRaw(fd)
 	if err != nil {
-		log.Panicf("session.os.stdin err : %v", err)
+		log.Errorf("session.os.stdin err : %v", err)
 	}
 	defer terminal.Restore(fd, oldState)
 
@@ -71,5 +101,8 @@ func GetInteractiveTerminal(username, password, host, key string, port int, ciph
 		log.Errorf("session.Wait: %v", err)
 		return err
 	}
+	os.Stdout.WriteString("Logout after pressing the key twice! ")
+	os.Stdin.Read(make([]byte, 1))
+
 	return nil
 }

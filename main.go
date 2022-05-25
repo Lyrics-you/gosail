@@ -176,7 +176,7 @@ func main() {
 	sshResults, _ := client.LimitShhWithGroup(clientConfig)
 
 	endTime := time.Now()
-	log.Infof("gosail finished. Process time %s. Number of active ip is %d", endTime.Sub(startTime), len(sshHosts))
+	log.Infof("gosail finished. Process time %s. Number of active ip is %d.", endTime.Sub(startTime), len(sshHosts))
 
 	if *outTxt {
 		for _, sshResult := range sshResults {

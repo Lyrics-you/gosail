@@ -294,5 +294,3 @@ Enter the 0~1 to select the host, other input will exit!
 1 : 192.168.245.132
 Input id :
 ```
-
-目前已知问题，第二次及之后选择需要先输入回车
