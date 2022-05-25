@@ -84,7 +84,7 @@ Usage of D:\GoToGo\gosail\gosail.exe:
 通过 -v 可以查看版本信息
 
 ```shell
-Version : 0.5.1
+Version : x.x.x
 Email : Leyuan.Jia@Outlook.com
 ```
 
