@@ -24,6 +24,7 @@ func SplitString(str string) (strList []string) {
 }
 
 func SplitUserHost(str string) (user, host string) {
+	// username@host
 	if str == "" {
 		return
 	}
@@ -34,6 +35,33 @@ func SplitUserHost(str string) (user, host string) {
 		user = ""
 		host = str
 	}
+	return
+}
+
+func SplitUserHostPath(str string) (user, host, path string) {
+	// username@host:path
+	if str == "" {
+		return
+	}
+	if strings.Contains(str, "@") && strings.Contains(str, ":") {
+		user, host = SplitUserHost(strings.Split(str, ":")[0])
+		path = strings.Split(str, ":")[1]
+		return
+	}
+	if strings.Contains(str, "@") && !strings.Contains(str, ":") {
+		user, host = SplitUserHost(str)
+		path = ""
+		return
+	}
+	if !strings.Contains(str, "@") && strings.Contains(str, ":") {
+		user = ""
+		host = strings.Split(str, ":")[0]
+		path = strings.Split(str, ":")[1]
+		return
+	}
+	user = ""
+	host = ""
+	path = str
 	return
 }
 
@@ -88,9 +116,10 @@ func GetIpListFromString(ipString string) ([]string, error) {
 			if err != nil {
 				return aip, err
 			}
-			for _, ip := range aip {
-				allIp = append(allIp, ip)
-			}
+			// for _, ip := range aip {
+			// 	allIp = append(allIp, ip)
+			// }
+			allIp = append(allIp, aip...)
 		}
 	}
 	return allIp, nil
@@ -109,9 +138,7 @@ func GetIpListFromFile(filePath string) ([]string, error) {
 			if err != nil {
 				return aip, err
 			}
-			for _, ip := range aip {
-				allIp = append(allIp, ip)
-			}
+			allIp = append(allIp, aip...)
 		}
 	}
 	return allIp, nil

@@ -22,7 +22,7 @@ A tool for batch execution of shh commands, programmed with go.
 
 ```go
 go get ./...
-go build
+go build .
 ```
 
 ### 提示
@@ -84,6 +84,7 @@ Usage of D:\GoToGo\gosail\gosail.exe:
 通过 -v 可以查看版本信息
 
 ```shell
+ToolName : gosail
 Version : x.x.x
 Email : Leyuan.Jia@Outlook.com
 ```
@@ -242,7 +243,7 @@ ssh.json
             "Port": 22,
             "Username": "root",
             "Password": "qwerty",
-            "cmdline": "ls"
+            "CmdLine": "ls"
         },
         {
             "Host": "192.168.80.132",
@@ -281,16 +282,105 @@ ssh.json
 
 #### -s select 选择主机登录
 
-可以通过输入id登录主机
+可以通过输入id登录主机，并且显示主机是否可以登录的状态。
 
 命令如下：
 
-`.\gosail.exe -hosts "192.168.245.131;192.168.245.132"  -cmdline "ls" -u root -p qwerty -s`
+`.\gosail.exe -hostfile ".\examples\host-list" -cmdline "cd /etc && ls" -s`
 
 ```shell
 Server List:
-Enter the 0~1 to select the host, other input will exit!
-0 : 192.168.245.131
-1 : 192.168.245.132
+Enter the 0~2 to select the host, other input will exit!
+ 0 :  192.168.245.13 [x]
+ 1 : 192.168.245.132 [√]
+ 2 : 192.168.245.133 [√]
 Input id :
 ```
+
+
+
+# gocy
+
+依赖于gosail的一个并发复制文件（pull\push)的工具。
+
+试想两种需求，往多台主机上传递文件（push）,或者从多台主机上拉取文件（pull）。
+
+## 使用
+
+### 编译
+
+```go
+go get ./...
+cd gocy/ && go build .
+```
+
+## 参数
+
+#### 帮助
+
+通过 -h -help -? 可以查看参数含义
+
+```shell
+  gocy -help
+  -c string
+        config file Path
+  -ciphers string
+        ciphers
+  -hostfile string
+        hostfile path
+  -hosts string
+        host address list
+  -ipfile string
+        ipfile path
+  -ips string
+        ip address list
+  -k string
+        ssh private key
+  -keyexchanges string
+        keyexchanges
+  -n int
+        max execute number (default 20)
+  -p string
+        password
+  -path string
+        pull or push's destination path
+  -port int
+        ssh port (default 22)
+  -pull string
+        pull's source path
+  -push string
+        push's source path
+  -s    select host to login
+  -t int
+        max timeout (default 60)
+  -u string
+        username
+  -v    show version
+```
+
+#### 版本
+
+通过 -v 可以查看版本信息
+
+```shell
+ToolName : gocy
+Version : x.x.x
+Email : Leyuan.Jia@Outlook.com
+```
+
+### pull/push
+
+其他参数可以参考gosail使用，不多描述。
+
+#### pull
+
+从主机批量并发拉取文件到本地，本地文件执行相对路径
+
+`./gosail -c "./examples/host-list" -pull "/root/demo/" -path "../demo/" `
+
+#### push
+
+从本地批量并发推送文件到主机，本地文件执行相对路径
+
+`./gosail -c "./examples/host-list" -push "../demo" -path "/root/demo/"`
+

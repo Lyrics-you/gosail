@@ -13,7 +13,6 @@ func Test_ip_ParseIp(t *testing.T) {
 	result, _ = ParseIp(str)
 	fmt.Println(result)
 	t.Log(result)
-	return
 }
 
 func Test_ip_GetAvailableIP(t *testing.T) {
@@ -21,7 +20,7 @@ func Test_ip_GetAvailableIP(t *testing.T) {
 	result, _ := GetAvailableIP(str)
 	fmt.Println(result)
 	t.Log(result)
-	return
+
 }
 
 func Test_ip_IPAddressToCIDR(t *testing.T) {
@@ -29,5 +28,4 @@ func Test_ip_IPAddressToCIDR(t *testing.T) {
 	result := IPAddressToCIDR(str)
 	fmt.Println(result)
 	t.Log(result)
-	return
 }

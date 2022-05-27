@@ -20,8 +20,11 @@ package model
 // 0.6.4 : simplify output content
 // 0.6.5 : adjusted server list
 // 0.6.6 : select host : fix selecting host again requires an additional character
-
+// 0.6.7 : adjust output content
+// 0.7.0 : gocy : new scp function , use push/pull copying files in different scenarios
+// 0.7.1 : gocy's local files support relative path
+// todo : scp function
 // furture : dynamic display of the command execution process
 const (
-	VERSION = "0.6.6"
+	VERSION = "0.7.1"
 )

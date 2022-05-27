@@ -6,16 +6,16 @@ import (
 )
 
 var (
-	usernameUnspecified = errors.New("username is not specified.")
-	hostUnspecified     = errors.New("host is not specified.")
+	errUsernameUnspecified = errors.New("username is not specified")
+	errHostUnspecified     = errors.New("host is not specified")
 )
 
 func checkParameterUH(host *model.SSHHost) error {
 	if host.Username == "" {
-		return usernameUnspecified
+		return errUsernameUnspecified
 	}
 	if host.Host == "" {
-		return hostUnspecified
+		return errHostUnspecified
 	}
 	return nil
 }

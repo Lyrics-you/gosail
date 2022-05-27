@@ -5,7 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// var log = Logger()
+var Log = Logger()
 
 func Logger() *logrus.Logger {
 	log := logrus.New()

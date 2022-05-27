@@ -2,16 +2,15 @@ package client
 
 import (
 	"fmt"
+	ssh "gosail/gossh"
 	"gosail/logger"
 	"gosail/model"
-	"gosail/ssh"
 	"sync"
 )
 
 var log = logger.Logger()
 
 func clinetSSHWitchChan(chLimit chan struct{}, ch chan model.SSHResult, host model.SSHHost, clientConfig *model.ClientConfig) error {
-
 	ssh.Dossh(host.Username, host.Password, host.Host, host.Key, host.CmdList, host.Port,
 		clientConfig.TimeLimit, clientConfig.CipherList, clientConfig.KeyExchangeList, host.LinuxMode,
 		ch)
@@ -80,7 +79,6 @@ func LimitShhWithGroup(clientConfig *model.ClientConfig) ([]model.SSHResult, err
 		} else {
 			go clinetSSHWithGroup(host, clientConfig, chs[i], &wg)
 		}
-
 	}
 
 	sshResults := []model.SSHResult{}

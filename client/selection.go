@@ -2,8 +2,8 @@ package client
 
 import (
 	"fmt"
+	ssh "gosail/gossh"
 	"gosail/model"
-	"gosail/ssh"
 	"strconv"
 )
 
@@ -31,11 +31,13 @@ func LoginHostByID(sshHosts []model.SSHHost, sshResult []model.SSHResult) {
 			fmt.Println()
 		}
 	}
-	fmt.Println("### End Selection ###")
+	fmt.Println()
+	fmt.Println("👌End Selection!")
 }
 
 func showHostsList(sshResult []model.SSHResult) {
-	fmt.Println("Server List:")
+	fmt.Println()
+	fmt.Println("✋Server List:")
 	if len(sshResult) != 1 {
 		fmt.Printf("Enter the 0~%d to select the host, other input will exit!\n", len(sshResult)-1)
 	} else {
@@ -63,12 +65,12 @@ func selectHost() int {
 	return id
 }
 
-func loginHost(sshHosts []model.SSHHost, sshResult []model.SSHResult, id int) {
+func loginHost(sshHosts []model.SSHHost, sshResults []model.SSHResult, id int) {
 	host := sshHosts[id]
 
-	if !sshResult[id].Success {
+	if !sshResults[id].Success {
 		fmt.Println()
-		fmt.Print(sshResult[id].Result)
+		fmt.Print(sshResults[id].Result)
 		return
 	}
 	fmt.Println()

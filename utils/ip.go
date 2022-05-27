@@ -11,9 +11,9 @@ func ParseIp(ip string) ([]string, error) {
 	var availableIPs []string
 	// if ip is "1.1.1.1/",trim /
 	ip = strings.TrimRight(ip, "/")
-	if strings.Contains(ip, "/") == true {
+	if strings.Contains(ip, "/") {
 		// IP/CIDR
-		if strings.Contains(ip, "/32") == true {
+		if strings.Contains(ip, "/32") {
 			aip := strings.Replace(ip, "/32", "", -1)
 			availableIPs = append(availableIPs, aip)
 		} else {
@@ -22,7 +22,7 @@ func ParseIp(ip string) ([]string, error) {
 				return availableIPs, err
 			}
 		}
-	} else if strings.Contains(ip, "-") == true {
+	} else if strings.Contains(ip, "-") {
 		// IP-IP range
 		ipRange := strings.SplitN(ip, "-", 2)
 		availableIPs = GetAvailableIPRange(ipRange[0], ipRange[1])
@@ -79,11 +79,11 @@ func GetAvailableIPRange(ipStart, ipEnd string) []string {
 }
 
 func IPAddressToCIDR(ipAdress string) string {
-	if strings.Contains(ipAdress, "/") == true {
+	if strings.Contains(ipAdress, "/") {
 		ipAndMask := strings.Split(ipAdress, "/")
 		ip := ipAndMask[0]
 		mask := ipAndMask[1]
-		if strings.Contains(mask, ".") == true {
+		if strings.Contains(mask, ".") {
 			mask = IPMaskStringToCIDR(mask)
 		}
 		return ip + "/" + mask
