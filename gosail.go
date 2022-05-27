@@ -54,9 +54,9 @@ func main() {
 	var host_Struct model.SSHHost
 
 	if *version {
-		fmt.Println("ToolName :" + "gosail")
-		fmt.Println("Version : " + model.VERSION)
-		fmt.Println("Email : Leyuan.Jia@Outlook.com")
+		fmt.Println("ToolName : " + "gosail")
+		fmt.Println("Version  : " + model.VERSION)
+		fmt.Println("Email    : Leyuan.Jia@Outlook.com")
 		os.Exit(0)
 	}
 

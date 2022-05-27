@@ -54,9 +54,9 @@ func main() {
 	linuxMode := true
 
 	if *version {
-		fmt.Println("ToolName :" + "gocy")
-		fmt.Println("Version : " + model.VERSION)
-		fmt.Println("Email : Leyuan.Jia@Outlook.com")
+		fmt.Println("ToolName : " + "gocy")
+		fmt.Println("Version  : " + model.VERSION)
+		fmt.Println("Email    : Leyuan.Jia@Outlook.com")
 		os.Exit(0)
 	}
 
@@ -161,13 +161,17 @@ func main() {
 
 	if *pull != "" {
 		surPath := *pull
+		var dstUser, dstHost, dstPath string
 		if *path != "" {
-			dstUser, dstHost, dstPath := utils.SplitUserHostPath(*path)
-			err = goscp.SecureCopyPull(sshHosts, surPath, dstUser, dstHost, dstPath)
+			dstUser, dstHost, dstPath = utils.SplitUserHostPath(*path)
 		} else {
-			dstUser, dstHost, dstPath := utils.SplitUserHostPath("")
-			err = goscp.SecureCopyPull(sshHosts, surPath, dstUser, dstHost, dstPath)
+			dstUser, dstHost, dstPath = utils.SplitUserHostPath("")
 		}
+		if *username != "" {
+			dstUser = *username
+		}
+		err = goscp.SecureCopyPull(sshHosts, surPath, dstUser, dstHost, dstPath)
+
 	}
 
 	if err != nil {
@@ -178,6 +182,9 @@ func main() {
 	if *push != "" {
 		dstPath := *path
 		surUser, surHost, surPath := utils.SplitUserHostPath(*push)
+		if *username != "" {
+			surUser = *username
+		}
 		err = goscp.SecureCopyPush(sshHosts, surUser, surHost, surPath, dstPath)
 	}
 
