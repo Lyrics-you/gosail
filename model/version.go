@@ -23,8 +23,8 @@ package model
 // 0.6.7 : adjust output content
 // 0.7.0 : gocy : new scp function , use push/pull copying files in different scenarios
 // 0.7.1 : gocy's local files support relative path
-// 0,7.2 : fix username' problem
-// todo : scp function
+// 0.7.2 : fix username' problem ()
+// 0.7.3 : fix use relative path when host and user is not nil
 // furture : dynamic display of the command execution process
 const (
 	VERSION = "0.7.2"

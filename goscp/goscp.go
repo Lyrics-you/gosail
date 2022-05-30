@@ -9,15 +9,18 @@ import (
 )
 
 func SecureCopyPull(sshHosts []model.SSHHost, surPath, dstUser, dstHost, dstPath string) error {
+	var err error
+	if dstUser == "" && dstHost == "" {
+		dstPath, err = GetAbsFilePath(dstPath)
+		if err != nil {
+			return err
+		}
+	}
+	err = utils.SetDeafultUserHostPath(&dstUser, &dstHost, &dstPath)
+	if err != nil {
+		return err
+	}
 
-	err := utils.SetDeafultUserHostPath(&dstUser, &dstHost, &dstPath)
-	if err != nil {
-		return err
-	}
-	dstPath, err = GetAbsFilePath(dstPath)
-	if err != nil {
-		return err
-	}
 	for id, sshHost := range sshHosts {
 		tagPath := fmt.Sprintf("%s%s/", dstPath, sshHost.Host)
 		sshHosts[id].LinuxMode = true
@@ -30,14 +33,18 @@ func SecureCopyPull(sshHosts []model.SSHHost, surPath, dstUser, dstHost, dstPath
 }
 
 func SecureCopyPush(sshHosts []model.SSHHost, surUser, surHost, surPath, dstPath string) error {
-	err := utils.SetDeafultUserHostPath(&surUser, &surHost, &surPath)
+	var err error
+	if surUser == "" && surHost == "" {
+		surPath, err = GetAbsFilePath(surPath)
+		if err != nil {
+			return err
+		}
+	}
+	err = utils.SetDeafultUserHostPath(&surUser, &surHost, &surPath)
 	if err != nil {
 		return err
 	}
-	surPath, err = GetAbsFilePath(surPath)
-	if err != nil {
-		return err
-	}
+
 	for id := range sshHosts {
 		sshHosts[id].LinuxMode = true
 		sshHosts[id].CmdList = []string{
@@ -78,7 +85,7 @@ func PullDestFileLine(surPath, username, dstHost, tagPath string) string {
 func PushDestFileLine(username, surHost, surPath, dstPth string) string {
 	// dstHost : xxx.xxx.xxx.xxx
 	// scp -r username@surHost:surPath dstPath
-	copyFileLine := fmt.Sprintf("scp -r  %s@%s:%s %s", username, surHost, surPath, dstPth)
+	copyFileLine := fmt.Sprintf("scp -r %s@%s:%s %s", username, surHost, surPath, dstPth)
 	return copyFileLine
 
 }

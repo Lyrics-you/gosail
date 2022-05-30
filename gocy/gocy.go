@@ -159,6 +159,11 @@ func main() {
 		KeyExchangeList: keyExchangeList,
 	}
 
+	if *pull != "" && *push != "" {
+		log.Errorf("push and pull cannot be used at the same time")
+		return
+	}
+
 	if *pull != "" {
 		surPath := *pull
 		var dstUser, dstHost, dstPath string
@@ -166,9 +171,6 @@ func main() {
 			dstUser, dstHost, dstPath = utils.SplitUserHostPath(*path)
 		} else {
 			dstUser, dstHost, dstPath = utils.SplitUserHostPath("")
-		}
-		if *username != "" {
-			dstUser = *username
 		}
 		err = goscp.SecureCopyPull(sshHosts, surPath, dstUser, dstHost, dstPath)
 
@@ -182,9 +184,6 @@ func main() {
 	if *push != "" {
 		dstPath := *path
 		surUser, surHost, surPath := utils.SplitUserHostPath(*push)
-		if *username != "" {
-			surUser = *username
-		}
 		err = goscp.SecureCopyPush(sshHosts, surUser, surHost, surPath, dstPath)
 	}
 

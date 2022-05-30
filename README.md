@@ -374,13 +374,39 @@ Email : Leyuan.Jia@Outlook.com
 
 #### pull
 
-从主机批量并发拉取文件到本地，本地文件执行相对路径
+从主机批量并发拉取文件到本地，本地文件支持相对路径以及其他主机目录（username@host:/path)，文件下每个主机的文件以各自主机名作为区分。
 
 `./gosail -c "./examples/host-list" -pull "/root/demo/" -path "../demo/" `
 
+`./gosail -c "./examples/host-list" -pull "/root/demo/" -path "root@192.168.245.131:/root/demo"`
+
+```shell
+.
+├── 192.168.245.132
+│   └── examples
+│       ├── cmdfile
+│       ├── echodate
+│       ├── example-cmdfile
+│       ├── host-list
+│       ├── host-list-name
+│       ├── ip-list
+│       └── ssh.json
+└── 192.168.245.133
+    └── examples
+        ├── cmdfile
+        ├── echodate
+        ├── example-cmdfile
+        ├── host-list
+        ├── host-list-name
+        ├── ip-list
+        └── ssh.json
+```
+
 #### push
 
-从本地批量并发推送文件到主机，本地文件执行相对路径
+从本地批量并发推送文件到主机，本地文件支持相对路径以及其他主机目录（username@host:/path)
 
 `./gosail -c "./examples/host-list" -push "../demo" -path "/root/demo/"`
+
+`./gosail -c "./examples/host-list" -push "root@192.168.245.131:/root/demo" -path "/root/demo/"`
 

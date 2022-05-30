@@ -46,7 +46,7 @@ func showHostsList(sshResult []model.SSHResult) {
 	// var status = map[bool]string{false: "\u001b[01;31m[x]\u001b[0m", true: "\u001b[01;32m[√]\u001b[0m"}
 	var status = map[bool]string{false: "[x]", true: "[√]"}
 	for idx, host := range sshResult {
-		fmt.Printf("%2d : %15s %s\n", idx, host.Host, status[host.Success])
+		fmt.Printf("%3d : %15s %s\n", idx, host.Host, status[host.Success])
 	}
 }
 
