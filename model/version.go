@@ -27,5 +27,5 @@ package model
 // 0.7.3 : fix use relative path when host and user is not nil
 // furture : dynamic display of the command execution process
 const (
-	VERSION = "0.7.2"
+	VERSION = "0.7.3"
 )
