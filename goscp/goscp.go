@@ -36,7 +36,7 @@ func PathTagHost(dstPath, host string) string {
 
 func MakeTagDirRun(dstPath, host string, ch chan model.RunResult, wg *sync.WaitGroup) {
 	tagPath := PathTagHost(dstPath, host)
-	err := os.MkdirAll(tagPath, os.ModePerm)
+	err := os.MkdirAll(tagPath, 0777)
 
 	if err != nil {
 		ch <- model.RunResult{

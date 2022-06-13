@@ -27,7 +27,8 @@ package model
 // 0.7.3 : fix use relative path when host and user is not nil
 // 0.8.0 : refactored the code logic and operation of gocy
 // 0.8.1 : fix gocy pull/push local copy's error; text left-aligned display
+// 0.8.2 : modify file permissions 0777
 // furture : dynamic display of the command execution process
 const (
-	VERSION = "0.8.1"
+	VERSION = "0.8.2"
 )
