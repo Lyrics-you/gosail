@@ -94,15 +94,15 @@ func connectSession(username, password, host, key string, port int, cipherList, 
 	return session, nil
 }
 
-func Dossh(username, password, host, key string, cmdlist []string, port, timeout int, cipherList, keyExchangeList []string, linuxMode bool, ch chan model.SSHResult) {
+func Dossh(username, password, host, key string, cmdlist []string, port, timeout int, cipherList, keyExchangeList []string, linuxMode bool, ch chan model.RunResult) {
 
-	chSSH := make(chan model.SSHResult)
+	chSSH := make(chan model.RunResult)
 	if linuxMode {
 		go dossh_run(username, password, host, key, cmdlist, port, cipherList, keyExchangeList, chSSH)
 	} else {
 		go dossh_session(username, password, host, key, cmdlist, port, cipherList, keyExchangeList, chSSH)
 	}
-	var res model.SSHResult
+	var res model.RunResult
 
 	select {
 	case <-time.After(time.Duration(timeout) * time.Second):
@@ -115,15 +115,15 @@ func Dossh(username, password, host, key string, cmdlist []string, port, timeout
 	}
 }
 
-func dossh_session(username, password, host, key string, cmdlist []string, port int, cipherList, keyExchangeList []string, ch chan model.SSHResult) {
+func dossh_session(username, password, host, key string, cmdlist []string, port int, cipherList, keyExchangeList []string, ch chan model.RunResult) {
 	session, err := connectSession(username, password, host, key, port, cipherList, keyExchangeList)
 
-	var sshResult model.SSHResult
+	var sshResult model.RunResult
 	sshResult.Host = host
 
 	if err != nil {
 		sshResult.Success = false
-		sshResult.Result = fmt.Sprintf("<%s>", err.Error())
+		sshResult.Result = fmt.Sprintf("<%s>\n", err.Error())
 		ch <- sshResult
 		return
 	}
@@ -140,7 +140,7 @@ func dossh_session(username, password, host, key string, cmdlist []string, port 
 	err = session.Shell()
 	if err != nil {
 		sshResult.Success = false
-		sshResult.Result = fmt.Sprintf("<%s>", err.Error())
+		sshResult.Result = fmt.Sprintf("<%s>\n", err.Error())
 		ch <- sshResult
 		return
 	}
@@ -160,14 +160,14 @@ func dossh_session(username, password, host, key string, cmdlist []string, port 
 	}
 }
 
-func dossh_run(username, password, host, key string, cmdlist []string, port int, cipherList, keyExchangeList []string, ch chan model.SSHResult) {
+func dossh_run(username, password, host, key string, cmdlist []string, port int, cipherList, keyExchangeList []string, ch chan model.RunResult) {
 	session, err := connectSession(username, password, host, key, port, cipherList, keyExchangeList)
-	var sshResult model.SSHResult
+	var sshResult model.RunResult
 	sshResult.Host = host
 
 	if err != nil {
 		sshResult.Success = false
-		sshResult.Result = fmt.Sprintf("<%s>", err.Error())
+		sshResult.Result = fmt.Sprintf("<%s>\n", err.Error())
 		ch <- sshResult
 		return
 	}
@@ -183,7 +183,7 @@ func dossh_run(username, password, host, key string, cmdlist []string, port int,
 	err = session.Run(newcmd)
 	if err != nil {
 		sshResult.Success = false
-		sshResult.Result = fmt.Sprintf("<%s>", err.Error())
+		sshResult.Result = fmt.Sprintf("<%s>\n", err.Error())
 		ch <- sshResult
 		return
 	}

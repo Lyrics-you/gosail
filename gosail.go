@@ -207,9 +207,9 @@ func main() {
 		return
 	}
 
-	for _, sshResult := range sshResults {
+	for id, sshResult := range sshResults {
 		// fmt.Println("> host: ", sshResult.Host)
-		fmt.Printf("👇===============> %15s <===============\n", sshResult.Host)
+		fmt.Printf("👇===============> %-15s <===============[%-3d]\n", sshResult.Host, id)
 		if !*linuxMode && sshResult.Success {
 			sshResult.Result = simpleline(sshResult.Result, len(cmdList)+2, 3)
 		}

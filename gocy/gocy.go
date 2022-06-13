@@ -48,6 +48,7 @@ func main() {
 	var err error
 
 	sshHosts := []model.SSHHost{}
+	scpResults := []model.RunResult{}
 	var host_Struct model.SSHHost
 
 	// scp need linuxMode avoid timeout
@@ -115,7 +116,6 @@ func main() {
 			host_Struct.Password = *password
 			host_Struct.Port = *port
 
-			host_Struct.CmdList = cmdList
 			if *password == "" && *key == "" {
 				*key = ssh.DefaultKeyPath()
 			}
@@ -164,27 +164,61 @@ func main() {
 		return
 	}
 
-	if *pull != "" {
-		surPath := *pull
-		var dstUser, dstHost, dstPath string
-		if *path != "" {
-			dstUser, dstHost, dstPath = utils.SplitUserHostPath(*path)
-		} else {
-			dstUser, dstHost, dstPath = utils.SplitUserHostPath("")
-		}
-		err = goscp.SecureCopyPull(sshHosts, surPath, dstUser, dstHost, dstPath)
-
-	}
-
 	if err != nil {
 		log.Errorf("SCP pull failed, err : %v", err)
 		return
 	}
 
+	endTime := time.Now()
+	log.Infof("gocy finished. Process time %s. Number of active ip is %d.", endTime.Sub(startTime), len(sshHosts))
+
 	if *push != "" {
-		dstPath := *path
-		surUser, surHost, surPath := utils.SplitUserHostPath(*push)
-		err = goscp.SecureCopyPush(sshHosts, surUser, surHost, surPath, dstPath)
+		scpConfig := model.SCPConfig{
+			SshHosts:  clientConfig.SshHosts,
+			TimeLimit: clientConfig.TimeLimit,
+			NumLimit:  clientConfig.NumLimit,
+			SurPath:   *push,
+			DstPath:   *path,
+			Method:    "PUSH",
+		}
+
+		goscp.SecureCopyPushMakeDir(&scpConfig)
+		sshResults, _ := client.LimitShhWithGroup(clientConfig)
+
+		scpResults, _ = goscp.LimitScpWithGroup(&scpConfig, sshResults)
+		for id, scpResult := range scpResults {
+			fmt.Printf("👇===============> %-15s <===============[%-3d]\n", "localhost", id)
+			if sshResults[id].Success {
+				fmt.Print(sshResults[id].Result)
+			}
+			fmt.Print(scpResult.Result)
+			fmt.Println()
+		}
+		fmt.Println("👌Finshed!")
+	}
+
+	if *pull != "" {
+		scpConfig := model.SCPConfig{
+			SshHosts:  clientConfig.SshHosts,
+			TimeLimit: clientConfig.TimeLimit,
+			NumLimit:  clientConfig.NumLimit,
+			SurPath:   *pull,
+			DstPath:   *path,
+			Method:    "PULL",
+		}
+
+		mkdirResults := goscp.SecureCopyPullMakeDir(&scpConfig)
+		scpResults, _ = goscp.LimitScpWithGroup(&scpConfig, mkdirResults)
+
+		for id, scpResult := range scpResults {
+			fmt.Printf("👇===============> %-15s <===============[%-3d]\n", "localhost", id)
+			if mkdirResults[id].Success {
+				fmt.Print(mkdirResults[id].Result)
+			}
+			fmt.Print(scpResult.Result)
+			fmt.Println()
+		}
+		fmt.Println("👌Finshed!")
 	}
 
 	if err != nil {
@@ -192,27 +226,8 @@ func main() {
 		return
 	}
 
-	// for _, ssHost := range sshHosts {
-	// 	fmt.Println(ssHost.CmdList)
-	// }
-
-	sshResults, _ := client.LimitShhWithGroup(clientConfig)
-	// sshResults, _ := client.LimitShhWithChan(clientConfig)
-
-	endTime := time.Now()
-	log.Infof("gocy finished. Process time %s. Number of active ip is %d.", endTime.Sub(startTime), len(sshHosts))
-
-	for _, sshResult := range sshResults {
-		// fmt.Println("> host: ", sshResult.Host)
-		fmt.Printf("👇===============> %15s <===============\n", sshResult.Host)
-		// fmt.Println(sshHosts[id].CmdList)
-		fmt.Println(sshResult.Result)
-
-	}
-	fmt.Println("👌Finshed!")
-
 	if *selection {
-		client.LoginHostByID(sshHosts, sshResults)
+		client.LoginHostByID(sshHosts, scpResults)
 	}
 
 }

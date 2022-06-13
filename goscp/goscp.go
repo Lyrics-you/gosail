@@ -2,92 +2,118 @@ package goscp
 
 import (
 	"fmt"
+	"gosail/logger"
 	"gosail/model"
 	"gosail/utils"
-	"path/filepath"
+	"os"
+	"os/exec"
+	"runtime"
 	"strings"
+	"sync"
 )
 
-func SecureCopyPull(sshHosts []model.SSHHost, surPath, dstUser, dstHost, dstPath string) error {
-	var err error
-	if dstUser == "" && dstHost == "" {
-		dstPath, err = GetAbsFilePath(dstPath)
-		if err != nil {
-			return err
+var (
+	log = logger.Logger()
+)
+
+func SecureCopyPushMakeDir(scpConfig *model.SCPConfig) {
+	for id := range scpConfig.SshHosts {
+		scpConfig.SshHosts[id].LinuxMode = true
+		scpConfig.SshHosts[id].CmdList = []string{
+			MakePushDestFileLine(scpConfig.DstPath),
+			fmt.Sprintf("cd %s && pwd", scpConfig.DstPath),
 		}
 	}
-	err = utils.SetDeafultUserHostPath(&dstUser, &dstHost, &dstPath)
+}
+
+func PathTagHost(dstPath, host string) string {
+	if dstPath != "" && !strings.HasSuffix(dstPath, "/") {
+		dstPath += "/"
+	}
+	tagPath := fmt.Sprintf("%s%s/", dstPath, host)
+	return tagPath
+}
+
+func MakeTagDirRun(dstPath, host string, ch chan model.RunResult, wg *sync.WaitGroup) {
+	tagPath := PathTagHost(dstPath, host)
+	err := os.MkdirAll(tagPath, os.ModePerm)
+
 	if err != nil {
-		return err
-	}
-
-	for id, sshHost := range sshHosts {
-		tagPath := fmt.Sprintf("%s%s/", dstPath, sshHost.Host)
-		sshHosts[id].LinuxMode = true
-		sshHosts[id].CmdList = []string{
-			MakePullDestDirLine(dstUser, dstHost, tagPath),
-			PullDestFileLine(surPath, dstUser, dstHost, tagPath),
+		ch <- model.RunResult{
+			Success: false,
+			Result:  fmt.Sprintf("MakeDir failed with %s", err),
+		}
+		log.Error(err)
+	} else {
+		ch <- model.RunResult{
+			Success: true,
+			Result:  fmt.Sprintf("MakeDir %s Done!\n", tagPath),
 		}
 	}
-	return nil
+	wg.Done()
 }
 
-func SecureCopyPush(sshHosts []model.SSHHost, surUser, surHost, surPath, dstPath string) error {
+func SecureCopyPullMakeDir(scpConfig *model.SCPConfig) []model.RunResult {
+	var wg sync.WaitGroup
+	wg.Add(scpConfig.NumLimit)
+	chs := make([]chan model.RunResult, len(scpConfig.SshHosts))
+	for i, sshHosts := range scpConfig.SshHosts {
+		chs[i] = make(chan model.RunResult, 1)
+		go MakeTagDirRun(scpConfig.DstPath, sshHosts.Host, chs[i], &wg)
+	}
+
+	mkdirResults := []model.RunResult{}
+
+	for _, ch := range chs {
+		res := <-ch
+
+		if res.Result != "" {
+			mkdirResults = append(mkdirResults, res)
+		}
+	}
+	return mkdirResults
+}
+
+func PushFileCmd(surPath, username, dstHost, dstPath string) *exec.Cmd {
+	// dstHost : xxx.xxx.xxx.xxx
+	// scp -r surPath username@dstHost:dstPath
+	var copyFileCmd *exec.Cmd
+	var iHost string
 	var err error
-	if surUser == "" && surHost == "" {
-		surPath, err = GetAbsFilePath(surPath)
+	if runtime.GOOS == "linux" {
+		iHost, err = utils.PresentHost()
 		if err != nil {
-			return err
+			log.Error(err)
 		}
 	}
-	err = utils.SetDeafultUserHostPath(&surUser, &surHost, &surPath)
-	if err != nil {
-		return err
-	}
 
-	for id := range sshHosts {
-		sshHosts[id].LinuxMode = true
-		sshHosts[id].CmdList = []string{
-			MakePushDestFileLine(dstPath),
-			PushDestFileLine(surUser, surHost, surPath, dstPath),
+	if iHost == dstHost {
+		copyFileCmd = exec.Command("/bin/cp", "-rf", surPath, dstPath)
+	} else {
+		copyFileCmd = exec.Command("scp", "-r", surPath, fmt.Sprintf("%s@%s:%s", username, dstHost, dstPath))
+	}
+	return copyFileCmd
+}
+
+func PullFileCmd(username, surHost, surPath, dstPath string) *exec.Cmd {
+	// surHost : xxx.xxx.xxx.xxx
+	// tagPath : dstPath/host/
+	// scp -r username@surHost:surPath tagPath
+	var copyFileCmd *exec.Cmd
+	var iHost string
+	var err error
+	if runtime.GOOS == "linux" {
+		iHost, err = utils.PresentHost()
+		if err != nil {
+			log.Error(err)
 		}
 	}
-	return nil
-}
-
-func MakePullDestDirLine(username, dstHost, tagPath string) string {
-	// host : xxx.xxx.xxx.xxx
-	// tagPath : dstPath/sshHost.Host/
-	// ssh username@host "mkdir -p tagPath"
-	var mkdirLine string
-	if strings.Contains(tagPath, dstHost) {
-		mkdirLine = fmt.Sprintf("mkdir -p %s", tagPath)
+	if iHost == surHost {
+		copyFileCmd = exec.Command("/bin/cp", "-rf", surPath, dstPath)
 	} else {
-		mkdirLine = fmt.Sprintf("ssh %s@%s mkdir -p %s", username, dstHost, tagPath)
+		copyFileCmd = exec.Command("scp", "-r", fmt.Sprintf("%s@%s:%s", username, surHost, surPath), dstPath)
 	}
-	return mkdirLine
-}
-
-func PullDestFileLine(surPath, username, dstHost, tagPath string) string {
-	// dstHost : xxx.xxx.xxx.xxx
-	// tagPath : dstPath/sshHost.Host/
-	// scp -r surPath username@dstHost:tagPath
-	var copyFileLine string
-	if strings.Contains(tagPath, dstHost) {
-		copyFileLine = fmt.Sprintf("/bin/cp -rf %s %s && cd %s && ls", surPath, tagPath, tagPath)
-	} else {
-		copyFileLine = fmt.Sprintf("scp -r %s %s@%s:%s", surPath, username, dstHost, tagPath)
-	}
-	return copyFileLine
-
-}
-
-func PushDestFileLine(username, surHost, surPath, dstPth string) string {
-	// dstHost : xxx.xxx.xxx.xxx
-	// scp -r username@surHost:surPath dstPath
-	copyFileLine := fmt.Sprintf("scp -r %s@%s:%s %s", username, surHost, surPath, dstPth)
-	return copyFileLine
-
+	return copyFileCmd
 }
 
 func MakePushDestFileLine(dstPath string) string {
@@ -96,10 +122,71 @@ func MakePushDestFileLine(dstPath string) string {
 	return mkdirLine
 }
 
-func GetAbsFilePath(path string) (string, error) {
-	abspath, err := filepath.Abs(path)
+func SecureCopyPushRun(surPath, username, dstHost, dstPath string, ch chan model.RunResult, wg *sync.WaitGroup) {
+	scpCmd := PushFileCmd(surPath, username, dstHost, dstPath)
+	out, err := scpCmd.CombinedOutput()
 	if err != nil {
-		return path, err
+		ch <- model.RunResult{
+			Success: false,
+			Host:    dstHost,
+			Result:  fmt.Sprintf("Push failed with %s,%s", err, string(out)),
+		}
+	} else {
+		ch <- model.RunResult{
+			Success: true,
+			Host:    dstHost,
+			Result:  fmt.Sprintf("%s Done!\n", scpCmd),
+		}
 	}
-	return abspath + "/", nil
+	wg.Done()
+}
+
+func SecureCopyPullRun(username, surHost, surPath, dstPath string, ch chan model.RunResult, wg *sync.WaitGroup) {
+	scpCmd := PullFileCmd(username, surHost, surPath, dstPath)
+	out, err := scpCmd.CombinedOutput()
+	if err != nil {
+		ch <- model.RunResult{
+			Success: false,
+			Host:    surHost,
+			Result:  fmt.Sprintf("Pull failed with %s,%s", err, string(out)),
+		}
+	} else {
+		ch <- model.RunResult{
+			Success: true,
+			Host:    surHost,
+			Result:  fmt.Sprintf("%s Done!\n", scpCmd),
+		}
+	}
+	wg.Done()
+}
+
+func LimitScpWithGroup(scpConfig *model.SCPConfig, runResults []model.RunResult) ([]model.RunResult, error) {
+	var wg sync.WaitGroup
+	wg.Add(scpConfig.NumLimit)
+	chs := make([]chan model.RunResult, len(scpConfig.SshHosts))
+
+	for i, sshHosts := range scpConfig.SshHosts {
+		chs[i] = make(chan model.RunResult, 1)
+		if !runResults[i].Success {
+			chs[i] <- runResults[i]
+		} else {
+			if scpConfig.Method == "PUSH" {
+				go SecureCopyPushRun(scpConfig.SurPath, sshHosts.Username, sshHosts.Host, scpConfig.DstPath, chs[i], &wg)
+			} else {
+				tagPath := PathTagHost(scpConfig.DstPath, sshHosts.Host)
+				go SecureCopyPullRun(sshHosts.Username, sshHosts.Host, scpConfig.SurPath, tagPath, chs[i], &wg)
+			}
+		}
+	}
+
+	ScpResults := []model.RunResult{}
+
+	for _, ch := range chs {
+		res := <-ch
+		if res.Result != "" {
+			ScpResults = append(ScpResults, res)
+		}
+
+	}
+	return ScpResults, nil
 }

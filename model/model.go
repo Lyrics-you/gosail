@@ -10,10 +10,10 @@ type SSHHost struct {
 	CmdList   []string  `json:"CmdList"`
 	Key       string    `json:"Key"`
 	LinuxMode bool      `json:"LinuxMode"`
-	Result    SSHResult `json:"-"`
+	Result    RunResult `json:"-"`
 }
 
-type SSHResult struct {
+type RunResult struct {
 	Host    string
 	Success bool
 	Result  string
@@ -35,4 +35,13 @@ type ClientConfig struct {
 	TimeLimit       int
 	CipherList      []string
 	KeyExchangeList []string
+}
+
+type SCPConfig struct {
+	SshHosts  []SSHHost
+	NumLimit  int
+	TimeLimit int
+	SurPath   string
+	DstPath   string
+	Method    string
 }

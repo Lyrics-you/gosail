@@ -144,7 +144,7 @@ func GetIpListFromFile(filePath string) ([]string, error) {
 	return allIp, nil
 }
 
-func WriteIntoTxt(sshResult model.SSHResult, locate string) error {
+func WriteIntoTxt(sshResult model.RunResult, locate string) error {
 	outputFile, outputError := os.OpenFile(locate+sshResult.Host+".txt", os.O_WRONLY|os.O_CREATE, 0666)
 	if outputError != nil {
 		return outputError

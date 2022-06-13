@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -15,6 +16,14 @@ var (
 	ErrCantGetHost     = errors.New("cant get host")
 	ErrCantGetWorkDir  = errors.New("cant get work dir")
 )
+
+func GetAbsFilePath(path string) (string, error) {
+	abspath, err := filepath.Abs(path)
+	if err != nil {
+		return path, err
+	}
+	return abspath + "/", nil
+}
 
 func PresentWorkingDir() (string, error) {
 	var wd string
@@ -38,6 +47,7 @@ func PresentHost() (string, error) {
 		host = string(out)
 	} else {
 		return "", ErrCantGetHost
+		// return "192.168.245.1", nil
 	}
 	host = strings.Replace(host, "\n", "", -1)
 	return host, nil

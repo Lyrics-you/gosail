@@ -3,6 +3,8 @@ A tool for batch execution of shh commands, programmed with go.
 
 一个使用go编写的批量执行ssh命令的工具。
 
+![image-20220613110917195](D:\Github\gosail\image-20220613110917195.png)
+
 ## 说明
 
 支持：
@@ -289,11 +291,11 @@ ssh.json
 `.\gosail.exe -hostfile ".\examples\host-list" -cmdline "cd /etc && ls" -s`
 
 ```shell
-Server List:
+✋Server List:
 Enter the 0~2 to select the host, other input will exit!
- 0 :  192.168.245.13 [x]
- 1 : 192.168.245.132 [√]
- 2 : 192.168.245.133 [√]
+0   : 192.168.245.13  [x]
+1   : 192.168.245.132 [√]
+2   : 192.168.245.133 [√]
 Input id :
 ```
 
@@ -304,6 +306,8 @@ Input id :
 依赖于gosail的一个并发复制文件（pull\push)的工具。
 
 试想两种需求，往多台主机上传递文件（push）,或者从多台主机上拉取文件（pull）。
+
+![image-20220613122328741](D:\Github\gosail\image-20220613122328741.png)
 
 ## 使用
 

@@ -10,7 +10,7 @@ import (
 
 var log = logger.Logger()
 
-func clinetSSHWitchChan(chLimit chan struct{}, ch chan model.SSHResult, host model.SSHHost, clientConfig *model.ClientConfig) error {
+func clinetSSHWitchChan(chLimit chan struct{}, ch chan model.RunResult, host model.SSHHost, clientConfig *model.ClientConfig) error {
 	ssh.Dossh(host.Username, host.Password, host.Host, host.Key, host.CmdList, host.Port,
 		clientConfig.TimeLimit, clientConfig.CipherList, clientConfig.KeyExchangeList, host.LinuxMode,
 		ch)
@@ -19,17 +19,17 @@ func clinetSSHWitchChan(chLimit chan struct{}, ch chan model.SSHResult, host mod
 	return nil
 }
 
-func LimitShhWithChan(clientConfig *model.ClientConfig) ([]model.SSHResult, error) {
+func LimitShhWithChan(clientConfig *model.ClientConfig) ([]model.RunResult, error) {
 	chLimit := make(chan struct{}, clientConfig.NumLimit) //control the number of concurrent visits
-	chs := make([]chan model.SSHResult, len(clientConfig.SshHosts))
+	chs := make([]chan model.RunResult, len(clientConfig.SshHosts))
 
 	for i, host := range clientConfig.SshHosts {
-		chs[i] = make(chan model.SSHResult, 1)
+		chs[i] = make(chan model.RunResult, 1)
 
 		err := checkParameterUH(&host)
 		if err != nil {
 			log.Warnf("%s connect error, %v", host.Host, err)
-			chs[i] <- model.SSHResult{
+			chs[i] <- model.RunResult{
 				Host:    host.Host,
 				Success: false,
 				Result:  fmt.Sprintf("%s connect error, %v\n", host.Host, err),
@@ -41,7 +41,7 @@ func LimitShhWithChan(clientConfig *model.ClientConfig) ([]model.SSHResult, erro
 
 	}
 
-	sshResults := []model.SSHResult{}
+	sshResults := []model.RunResult{}
 
 	for _, ch := range chs {
 		res := <-ch
@@ -53,25 +53,25 @@ func LimitShhWithChan(clientConfig *model.ClientConfig) ([]model.SSHResult, erro
 	return sshResults, nil
 }
 
-func clinetSSHWithGroup(host model.SSHHost, clientConfig *model.ClientConfig, ch chan model.SSHResult, wg *sync.WaitGroup) error {
+func clinetSSHWithGroup(host model.SSHHost, clientConfig *model.ClientConfig, ch chan model.RunResult, wg *sync.WaitGroup) error {
 	ssh.Dossh(host.Username, host.Password, host.Host, host.Key, host.CmdList, host.Port,
 		clientConfig.TimeLimit, clientConfig.CipherList, clientConfig.KeyExchangeList, host.LinuxMode, ch)
 	wg.Done()
 	return nil
 }
 
-func LimitShhWithGroup(clientConfig *model.ClientConfig) ([]model.SSHResult, error) {
+func LimitShhWithGroup(clientConfig *model.ClientConfig) ([]model.RunResult, error) {
 	var wg sync.WaitGroup
-	wg.Add(len(clientConfig.SshHosts))
-	chs := make([]chan model.SSHResult, len(clientConfig.SshHosts))
+	wg.Add(clientConfig.NumLimit)
+	chs := make([]chan model.RunResult, len(clientConfig.SshHosts))
 
 	for i, host := range clientConfig.SshHosts {
-		chs[i] = make(chan model.SSHResult, 1)
+		chs[i] = make(chan model.RunResult, 1)
 
 		err := checkParameterUH(&host)
 		if err != nil {
 			log.Warnf("%s connect error, %v", host.Host, err)
-			chs[i] <- model.SSHResult{
+			chs[i] <- model.RunResult{
 				Host:    host.Host,
 				Success: false,
 				Result:  fmt.Sprintf("%s connect error, %v\n", host.Host, err),
@@ -81,7 +81,7 @@ func LimitShhWithGroup(clientConfig *model.ClientConfig) ([]model.SSHResult, err
 		}
 	}
 
-	sshResults := []model.SSHResult{}
+	sshResults := []model.RunResult{}
 
 	for _, ch := range chs {
 		res := <-ch
