@@ -129,7 +129,7 @@ func SecureCopyPushRun(surPath, username, dstHost, dstPath string, ch chan model
 		ch <- model.RunResult{
 			Success: false,
 			Host:    dstHost,
-			Result:  fmt.Sprintf("Push failed with %s,%s", err, string(out)),
+			Result:  fmt.Sprintf("Push failed with %s: %s", err, string(out)),
 		}
 	} else {
 		ch <- model.RunResult{
@@ -148,7 +148,7 @@ func SecureCopyPullRun(username, surHost, surPath, dstPath string, ch chan model
 		ch <- model.RunResult{
 			Success: false,
 			Host:    surHost,
-			Result:  fmt.Sprintf("Pull failed with %s,%s", err, string(out)),
+			Result:  fmt.Sprintf("Pull failed with %s: %s", err, string(out)),
 		}
 	} else {
 		ch <- model.RunResult{
