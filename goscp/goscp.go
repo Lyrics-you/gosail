@@ -17,25 +17,25 @@ var (
 )
 
 func SecureCopyPushMakeDir(scpConfig *model.SCPConfig) {
-	for id := range scpConfig.SshHosts {
-		scpConfig.SshHosts[id].LinuxMode = true
-		scpConfig.SshHosts[id].CmdList = []string{
-			MakePushDestFileLine(scpConfig.DstPath),
-			fmt.Sprintf("cd %s && pwd", scpConfig.DstPath),
+	for i := range scpConfig.SshHosts {
+		scpConfig.SshHosts[i].LinuxMode = true
+		scpConfig.SshHosts[i].CmdList = []string{
+			MakePushDestFileLine(scpConfig.DestPath[i]),
+			fmt.Sprintf("cd %s && pwd", scpConfig.DestPath[i]),
 		}
 	}
 }
 
-func PathTagHost(dstPath, host string) string {
-	if dstPath != "" && !strings.HasSuffix(dstPath, "/") {
-		dstPath += "/"
+func PathTagHost(destPath, host string) string {
+	if destPath != "" && !strings.HasSuffix(destPath, "/") {
+		destPath += "/"
 	}
-	tagPath := fmt.Sprintf("%s%s/", dstPath, host)
+	tagPath := fmt.Sprintf("%s%s/", destPath, host)
 	return tagPath
 }
 
-func MakeTagDirRun(dstPath, host string, ch chan model.RunResult, wg *sync.WaitGroup) {
-	tagPath := PathTagHost(dstPath, host)
+func MakeTagDirRun(chLimit chan struct{}, destPath, host string, ch chan model.RunResult, wg *sync.WaitGroup) {
+	tagPath := PathTagHost(destPath, host)
 	err := os.MkdirAll(tagPath, 0777)
 
 	if err != nil {
@@ -51,16 +51,20 @@ func MakeTagDirRun(dstPath, host string, ch chan model.RunResult, wg *sync.WaitG
 		}
 	}
 	wg.Done()
+	<-chLimit
 }
 
 func SecureCopyPullMakeDir(scpConfig *model.SCPConfig) []model.RunResult {
 	var wg sync.WaitGroup
-	wg.Add(scpConfig.NumLimit)
+	chLimit := make(chan struct{}, scpConfig.NumLimit)
 	chs := make([]chan model.RunResult, len(scpConfig.SshHosts))
 	for i, sshHosts := range scpConfig.SshHosts {
+		wg.Add(1)
 		chs[i] = make(chan model.RunResult, 1)
-		go MakeTagDirRun(scpConfig.DstPath, sshHosts.Host, chs[i], &wg)
+		chLimit <- struct{}{}
+		go MakeTagDirRun(chLimit, scpConfig.DestPath[i], sshHosts.Host, chs[i], &wg)
 	}
+	wg.Wait()
 
 	mkdirResults := []model.RunResult{}
 
@@ -74,9 +78,9 @@ func SecureCopyPullMakeDir(scpConfig *model.SCPConfig) []model.RunResult {
 	return mkdirResults
 }
 
-func PushFileCmd(surPath, username, dstHost, dstPath string) *exec.Cmd {
-	// dstHost : xxx.xxx.xxx.xxx
-	// scp -r surPath username@dstHost:dstPath
+func PushFileCmd(srcPath, username, destHost, destPath string) *exec.Cmd {
+	// destHost : xxx.xxx.xxx.xxx
+	// scp -r srcPath username@destHost:destPath
 	var copyFileCmd *exec.Cmd
 	var iHost string
 	var err error
@@ -87,18 +91,18 @@ func PushFileCmd(surPath, username, dstHost, dstPath string) *exec.Cmd {
 		}
 	}
 
-	if iHost == dstHost {
-		copyFileCmd = exec.Command("/bin/cp", "-rf", surPath, dstPath)
+	if iHost == destHost {
+		copyFileCmd = exec.Command("/bin/cp", "-rf", srcPath, destPath)
 	} else {
-		copyFileCmd = exec.Command("scp", "-r", surPath, fmt.Sprintf("%s@%s:%s", username, dstHost, dstPath))
+		copyFileCmd = exec.Command("scp", "-r", srcPath, fmt.Sprintf("%s@%s:%s", username, destHost, destPath))
 	}
 	return copyFileCmd
 }
 
-func PullFileCmd(username, surHost, surPath, dstPath string) *exec.Cmd {
-	// surHost : xxx.xxx.xxx.xxx
-	// tagPath : dstPath/host/
-	// scp -r username@surHost:surPath tagPath
+func PullFileCmd(username, srcHost, srcPath, destPath string) *exec.Cmd {
+	// srcHost : xxx.xxx.xxx.xxx
+	// tagPath : destPath/host/
+	// scp -r username@srcHost:srcPath tagPath
 	var copyFileCmd *exec.Cmd
 	var iHost string
 	var err error
@@ -108,85 +112,60 @@ func PullFileCmd(username, surHost, surPath, dstPath string) *exec.Cmd {
 			log.Error(err)
 		}
 	}
-	if iHost == surHost {
-		copyFileCmd = exec.Command("/bin/cp", "-rf", surPath, dstPath)
+	if iHost == srcHost {
+		copyFileCmd = exec.Command("/bin/cp", "-rf", srcPath, destPath)
 	} else {
-		copyFileCmd = exec.Command("scp", "-r", fmt.Sprintf("%s@%s:%s", username, surHost, surPath), dstPath)
+		copyFileCmd = exec.Command("scp", "-r", fmt.Sprintf("%s@%s:%s", username, srcHost, srcPath), destPath)
 	}
 	return copyFileCmd
 }
 
-func MakePushDestFileLine(dstPath string) string {
+func MakePushDestFileLine(destPath string) string {
 	// "mkdir -p tagPath"
-	mkdirLine := fmt.Sprintf("mkdir -p %s", dstPath)
+	mkdirLine := fmt.Sprintf("mkdir -p %s", destPath)
 	return mkdirLine
 }
 
-func SecureCopyPushRun(surPath, username, dstHost, dstPath string, ch chan model.RunResult, wg *sync.WaitGroup) {
-	scpCmd := PushFileCmd(surPath, username, dstHost, dstPath)
+func SecureCopyPushRun(chLimit chan struct{}, srcPath, username, destHost, destPath string, ch chan model.RunResult, wg *sync.WaitGroup) {
+	scpCmd := PushFileCmd(srcPath, username, destHost, destPath)
 	out, err := scpCmd.CombinedOutput()
 	if err != nil {
 		ch <- model.RunResult{
-			Success: false,
-			Host:    dstHost,
-			Result:  fmt.Sprintf("Push failed with %s: %s", err, string(out)),
+			Success:  false,
+			Username: username,
+			Host:     destHost,
+			Result:   fmt.Sprintf("Push failed with %s, %s", err, string(out)),
 		}
 	} else {
 		ch <- model.RunResult{
-			Success: true,
-			Host:    dstHost,
-			Result:  fmt.Sprintf("%s Done!\n", scpCmd),
+			Success:  true,
+			Username: username,
+			Host:     destHost,
+			Result:   fmt.Sprintf("%s Done!\n", scpCmd),
 		}
 	}
 	wg.Done()
+	<-chLimit
 }
 
-func SecureCopyPullRun(username, surHost, surPath, dstPath string, ch chan model.RunResult, wg *sync.WaitGroup) {
-	scpCmd := PullFileCmd(username, surHost, surPath, dstPath)
+func SecureCopyPullRun(chLimit chan struct{}, username, srcHost, srcPath, destPath string, ch chan model.RunResult, wg *sync.WaitGroup) {
+	scpCmd := PullFileCmd(username, srcHost, srcPath, destPath)
 	out, err := scpCmd.CombinedOutput()
 	if err != nil {
 		ch <- model.RunResult{
-			Success: false,
-			Host:    surHost,
-			Result:  fmt.Sprintf("Pull failed with %s: %s", err, string(out)),
+			Success:  false,
+			Username: username,
+			Host:     srcHost,
+			Result:   fmt.Sprintf("Pull failed with %s, %s", err, string(out)),
 		}
 	} else {
 		ch <- model.RunResult{
-			Success: true,
-			Host:    surHost,
-			Result:  fmt.Sprintf("%s Done!\n", scpCmd),
+			Success:  true,
+			Username: username,
+			Host:     srcHost,
+			Result:   fmt.Sprintf("%s Done!\n", scpCmd),
 		}
 	}
 	wg.Done()
-}
-
-func LimitScpWithGroup(scpConfig *model.SCPConfig, runResults []model.RunResult) ([]model.RunResult, error) {
-	var wg sync.WaitGroup
-	wg.Add(scpConfig.NumLimit)
-	chs := make([]chan model.RunResult, len(scpConfig.SshHosts))
-
-	for i, sshHosts := range scpConfig.SshHosts {
-		chs[i] = make(chan model.RunResult, 1)
-		if !runResults[i].Success {
-			chs[i] <- runResults[i]
-		} else {
-			if scpConfig.Method == "PUSH" {
-				go SecureCopyPushRun(scpConfig.SurPath, sshHosts.Username, sshHosts.Host, scpConfig.DstPath, chs[i], &wg)
-			} else {
-				tagPath := PathTagHost(scpConfig.DstPath, sshHosts.Host)
-				go SecureCopyPullRun(sshHosts.Username, sshHosts.Host, scpConfig.SurPath, tagPath, chs[i], &wg)
-			}
-		}
-	}
-
-	ScpResults := []model.RunResult{}
-
-	for _, ch := range chs {
-		res := <-ch
-		if res.Result != "" {
-			ScpResults = append(ScpResults, res)
-		}
-
-	}
-	return ScpResults, nil
+	<-chLimit
 }

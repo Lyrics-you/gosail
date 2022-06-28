@@ -74,21 +74,26 @@ func GetByte(filepath string) ([]byte, error) {
 	return result, nil
 }
 
-func GetString(filepath string) ([]string, error) {
+func SplitStringLine(str string) []string {
 	result := []string{}
+	for _, lineStr := range strings.Split(str, "\n") {
+		lineStr = strings.TrimSpace(lineStr)
+		if lineStr == "" || strings.HasPrefix(lineStr, "#") {
+			continue
+		}
+		result = append(result, lineStr)
+	}
+	return result
+}
+
+func GetString(filepath string) ([]string, error) {
 	b, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		// log.Errorf("read file %s error, %v", filepath, err)
 		return nil, err
 	}
 	s := string(b)
-	for _, lineStr := range strings.Split(s, "\n") {
-		lineStr = strings.TrimSpace(lineStr)
-		if lineStr == "" {
-			continue
-		}
-		result = append(result, lineStr)
-	}
+	result := SplitStringLine(s)
 	return result, nil
 }
 

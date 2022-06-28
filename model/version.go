@@ -1,6 +1,6 @@
 package model
 
-// version history:
+//  version history:
 // 0.1.0 : first version
 // 0.2.0 : functional testing
 // 0.3.0 : no-secret sign-in : ues default key path "UserHomeDir/.ssh/id_rsa"
@@ -28,7 +28,24 @@ package model
 // 0.8.0 : refactored the code logic and operation of gocy
 // 0.8.1 : fix gocy pull/push local copy's error; text left-aligned display
 // 0.8.2 : modify file permissions 0777
+// 0.9.1 : gobars : k8s mulit exec command tool
+// 0.9.2 : add tools' Emoji, add result and selection's username
+// 0.9.3 : fix splice command line not executing problem
+// 0.9.4 : add gobars'copy function : copy pods' file to local
+// 0.9.5 : error: username is not specified error
+// 0.9.6 : move goscp limit function to client
+// 0.9.7 : change code's "sur" to "src", "dst" to "dest"
+
+// todo : gocy add tar function
+
+// furture : new way of interacting with commands
 // furture : dynamic display of the command execution process
 const (
-	VERSION = "0.8.2"
+	VERSION = "0.9.7"
+)
+
+// ⛵ 🥥 🍺
+// 🚢 🚀 🚟
+var (
+	EMOJI = map[string]string{"gosail": "⛵", "gocy": "🥥", "gobars": "🍺"}
 )

@@ -28,7 +28,7 @@ func setPseudoTerminal(session *ssh.Session) error {
 	return nil
 }
 
-func GetInteractiveTerminal(username, password, host, key string, port int, cipherList, keyExchangeList []string) error {
+func GetInteractiveTerminal(username, password, host, key string, port int, cmdLine string, cipherList, keyExchangeList []string) error {
 	client, err := connect(username, password, host, key, port, cipherList, keyExchangeList)
 	if err != nil {
 		return err
@@ -65,9 +65,17 @@ func GetInteractiveTerminal(username, password, host, key string, port int, ciph
 		return err
 	}
 
-	if err := session.Shell(); err != nil {
-		log.Errorf("session.Shell err: %v", err)
-		return err
+	if cmdLine == "" {
+		if err := session.Shell(); err != nil {
+			log.Errorf("session.Shell err: %v", err)
+			return err
+		}
+	} else {
+		// interactive commands can be executed
+		if err := session.Start(cmdLine); err != nil {
+			log.Errorf("session.Start err: %v", err)
+			return err
+		}
 	}
 
 	if err := session.Wait(); err != nil {

@@ -3,7 +3,7 @@ A tool for batch execution of shh commands, programmed with go.
 
 一个使用go编写的批量执行ssh命令的工具。
 
-![image-20220613110917195](D:\Github\gosail\image-20220613110917195.png)
+![image-20220613110917195](.\image-20220613110917195.png)
 
 ## 说明
 
@@ -40,15 +40,16 @@ go build .
 通过 -h -help -? 可以查看参数含义
 
 ```shell
-Usage of D:\GoToGo\gosail\gosail.exe:
-  -c string
-        config file Path
   -ciphers string
         ciphers
   -cmdfile string
         cmdfile path
   -cmdline string
         command line
+  -config string
+        config file Path
+  -fpath string
+        write file path
   -hostfile string
         hostfile path
   -hosts string
@@ -63,18 +64,16 @@ Usage of D:\GoToGo\gosail\gosail.exe:
   -keyexchanges string
         keyexchanges
   -l    linux mode : multi command combine with && ,such as date&&cd /opt&&ls
-  -n int
+  -nl int
         max execute number (default 20)
   -otxt
         write result into txt
   -p string
         password
-  -path string
-        write file path
   -port int
         ssh port (default 22)
   -s    select host to login
-  -t int
+  -tl int
         max timeout (default 30)
   -u string
         username
@@ -307,7 +306,7 @@ Input id :
 
 试想两种需求，往多台主机上传递文件（push）,或者从多台主机上拉取文件（pull）。
 
-![image-20220613122328741](D:\Github\gosail\image-20220613122328741.png)
+![image-20220613122328741](.\image-20220613122328741.png)
 
 ## 使用
 
@@ -325,11 +324,10 @@ cd gocy/ && go build .
 通过 -h -help -? 可以查看参数含义
 
 ```shell
-  gocy -help
-  -c string
-        config file Path
   -ciphers string
         ciphers
+  -config string
+        config file Path
   -hostfile string
         hostfile path
   -hosts string
@@ -342,7 +340,7 @@ cd gocy/ && go build .
         ssh private key
   -keyexchanges string
         keyexchanges
-  -n int
+  -nl int
         max execute number (default 20)
   -p string
         password
@@ -355,8 +353,8 @@ cd gocy/ && go build .
   -push string
         push's source path
   -s    select host to login
-  -t int
-        max timeout (default 60)
+  -tl int
+        max timeout (default 30)
   -u string
         username
   -v    show version
@@ -380,9 +378,9 @@ Email : Leyuan.Jia@Outlook.com
 
 从主机批量并发拉取文件到本地，本地文件支持相对路径以及其他主机目录（username@host:/path)，文件下每个主机的文件以各自主机名作为区分。
 
-`./gosail -hostfile "./examples/host-list" -pull "/root/demo/" -path "../demo/" `
+`./gocy -hostfile "./examples/host-list" -pull "/root/demo/" -path "../demo/" `
 
-`./gosail -hostfile "./examples/host-list" -pull "/root/demo/" -path "root@192.168.245.131:/root/demo"`
+`./gocy -hostfile "./examples/host-list" -pull "/root/demo/" -path "root@192.168.245.131:/root/demo"`
 
 ```shell
 .
@@ -410,7 +408,146 @@ Email : Leyuan.Jia@Outlook.com
 
 从本地批量并发推送文件到主机，本地文件支持相对路径以及其他主机目录（username@host:/path)
 
-`./gosail -hostfile "./examples/host-list" -push "../demo" -path "/root/demo/"`
+`./gocy -hostfile "./examples/host-list" -push "../demo" -path "/root/demo/"`
 
-`./gosail -hostfile "./examples/host-list" -push "root@192.168.245.131:/root/demo" -path "/root/demo/"`
+`./gocy -hostfile "./examples/host-list" -push "root@192.168.245.131:/root/demo" -path "/root/demo/"`
+
+
+
+# gobars
+
+依赖于gosail的一个批量在k8s容器中执行命令工具
+
+![image-20220628194009292](.\image-20220628194009292.png)
+
+![image-20220628193758224](.\image-20220628193758224.png)
+
+## 使用
+
+### 编译
+
+```go
+go get ./...
+cd gobars/ && go build .
+```
+
+## 参数
+
+#### 帮助
+
+通过 -h -help -? 可以查看参数含义
+
+```shell
+  -app string
+        k8s app name    
+  -c string
+        k8s container   
+  -ciphers string       
+        ciphers
+  -cmdline string       
+        command line    
+  -config string        
+        config file Path
+  -fpath string
+        write file path
+  -hostfile string
+        hostfile path
+  -hosts string
+        host address list
+  -ipfile string
+        ipfile path
+  -ips string
+        ip address list
+  -j    print output in json format
+  -k string
+        ssh private key
+  -keyexchanges string
+        keyexchanges
+  -l string
+        k8s label
+  -n string
+        k8s namespace
+  -nl int
+        max execute number (default 20)
+  -otxt
+        write result into txt
+  -p string
+        password
+  -path string
+        pull's destination path
+  -port int
+        ssh port (default 22)
+  -pull string
+        pull's source path
+  -s    select host to login
+  -scp
+        k8s cp function
+  -tl int
+        max timeout (default 30)
+  -u string
+        username
+  -v    show version
+```
+
+#### 版本
+
+通过 -v 可以查看版本信息
+
+```shell
+ToolName : gobars
+Version : x.x.x
+Email : Leyuan.Jia@Outlook.com
+```
+
+#### cmdline
+
+指定k8s的master集群地址、pod的namespace、容器名称以及执行命令，即可批量并发在pod中执行命令
+
+`./gobars -hostfile "..\examples\host-list-k8s" -n ingress-nginx -c nginx-ingress-controller -cmdline "date" `
+
+```shell
+👇===============> nginx-ingress-controller-5bb8fb4bb6-2ndh7 <===============[0  ]
+👉 ------------> date
+Tue Jun 28 10:53:05 UTC 2022
+
+👇===============> nginx-ingress-controller-5bb8fb4bb6-rgm4w <===============[1  ]
+👉 ------------> date
+Tue Jun 28 10:53:05 UTC 2022
+
+👇===============> nginx-ingress-controller-5bb8fb4bb6-twmzv <===============[2  ]
+👉 ------------> date
+Tue Jun 28 10:53:05 UTC 2022
+
+👌Finshed!
+```
+
+#### pull
+
+指定k8s的master集群地址、pod的namespace、容器名称，需要加入参数-scp
+
+从pod批量并发拉取文件到本地，文件下每个pod的文件以各自名称作为区分。
+
+`./gobars -hostfile "..\examples\host-list-k8s" -n ingress-nginx -c nginx-ingress-controller -copy -pull "/etc/nginx" -path "./demo/"`
+
+```shell
+👇===============> nginx-ingress-controller-5bb8fb4bb6-2ndh7 <===============[0  ]
+/usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-2ndh7 ./demo/192.168.245.133/ Done!
+
+👇===============> nginx-ingress-controller-5bb8fb4bb6-rgm4w <===============[1  ]
+/usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-rgm4w ./demo/192.168.245.133/ Done!
+
+👇===============> nginx-ingress-controller-5bb8fb4bb6-twmzv <===============[2  ]
+/usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-twmzv ./demo/192.168.245.133/ Done!
+
+👌Finshed!
+```
+
+```shell
+[root@centos-7-01 gobars]# cd demo/
+[root@centos-7-01 demo]# ls
+192.168.245.133
+[root@centos-7-01 demo]# cd 192.168.245.133/
+[root@centos-7-01 192.168.245.133]# ls
+nginx-ingress-controller-5bb8fb4bb6-2ndh7  nginx-ingress-controller-5bb8fb4bb6-rgm4w  nginx-ingress-controller-5bb8fb4bb6-twmzv
+```
 

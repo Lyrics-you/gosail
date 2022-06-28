@@ -34,16 +34,16 @@ func main() {
 	port := flag.Int("port", 22, "ssh port")
 	ciphers := flag.String("ciphers", "", "ciphers")
 	keyExchanges := flag.String("keyexchanges", "", "keyexchanges")
-	config := flag.String("c", "", "config file Path")
-	timeLimit := flag.Int("t", 30, "max timeout")
-	numLimit := flag.Int("n", 20, "max execute number")
+	config := flag.String("config", "", "config file Path")
+	timeLimit := flag.Int("tl", 30, "max timeout")
+	numLimit := flag.Int("nl", 20, "max execute number")
 
 	linuxMode := flag.Bool("l", false, "linux mode : multi command combine with && ,such as date&&cd /opt&&ls")
 	selection := flag.Bool("s", false, "select host to login")
 
 	jsonMode := flag.Bool("j", false, "print output in json format")
 	outTxt := flag.Bool("otxt", false, "write result into txt")
-	filePath := flag.String("path", "", "write file path")
+	filePath := flag.String("fpath", "", "write file path")
 
 	flag.Parse()
 
@@ -54,6 +54,7 @@ func main() {
 	var host_Struct model.SSHHost
 
 	if *version {
+		fmt.Println("Welcome  : " + model.EMOJI["gosail"])
 		fmt.Println("ToolName : " + "gosail")
 		fmt.Println("Version  : " + model.VERSION)
 		fmt.Println("Email    : Leyuan.Jia@Outlook.com")
@@ -110,7 +111,7 @@ func main() {
 
 	if *config == "" {
 		if len(hostList) == 0 {
-			log.Warnf("hosts is empty")
+			log.Errorf("hosts is empty")
 			return
 		}
 		for _, host := range hostList {
@@ -129,7 +130,7 @@ func main() {
 
 			// empty command
 			if len(cmdList) == 0 {
-				log.Warnf("command is empty")
+				log.Errorf("command is empty")
 				return
 			}
 
@@ -177,10 +178,6 @@ func main() {
 		KeyExchangeList: keyExchangeList,
 	}
 
-	// for _, ssHost := range sshHosts {
-	// 	fmt.Println(ssHost.CmdList)
-	// }
-
 	sshResults, _ := client.LimitShhWithGroup(clientConfig)
 	// sshResults, _ := client.LimitShhWithChan(clientConfig)
 
@@ -208,8 +205,7 @@ func main() {
 	}
 
 	for id, sshResult := range sshResults {
-		// fmt.Println("> host: ", sshResult.Host)
-		fmt.Printf("👇===============> %-15s <===============[%-3d]\n", sshResult.Host, id)
+		fmt.Printf("👇===============> %4s@%-15s <===============[%-3d]\n", sshHosts[id].Username, sshResult.Host, id)
 		if !*linuxMode && sshResult.Success {
 			sshResult.Result = simpleline(sshResult.Result, len(cmdList)+2, 3)
 		}
@@ -219,7 +215,7 @@ func main() {
 	fmt.Println("👌Finshed!")
 
 	if *selection {
-		client.LoginHostByID(sshHosts, sshResults)
+		client.LoginHostByID(sshHosts, sshResults, "")
 	}
 
 }

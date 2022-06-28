@@ -25,6 +25,7 @@ func main() {
 	ips := flag.String("ips", "", "ip address list")
 	ipFile := flag.String("ipfile", "", "ipfile path")
 
+	// gocy's arguments
 	// to := flag.String("to", "", "push to destination path")
 	pull := flag.String("pull", "", "pull's source path")
 	push := flag.String("push", "", "push's source path")
@@ -36,11 +37,12 @@ func main() {
 	port := flag.Int("port", 22, "ssh port")
 	ciphers := flag.String("ciphers", "", "ciphers")
 	keyExchanges := flag.String("keyexchanges", "", "keyexchanges")
-	config := flag.String("c", "", "config file Path")
-	timeLimit := flag.Int("t", 60, "max timeout")
-	numLimit := flag.Int("n", 20, "max execute number")
+	config := flag.String("config", "", "config file Path")
+	timeLimit := flag.Int("tl", 30, "max timeout")
+	numLimit := flag.Int("nl", 20, "max execute number")
 
 	selection := flag.Bool("s", false, "select host to login")
+	// linuxmode is true
 
 	flag.Parse()
 
@@ -55,6 +57,7 @@ func main() {
 	linuxMode := true
 
 	if *version {
+		fmt.Println("Welcome  : " + model.EMOJI["gocy"])
 		fmt.Println("ToolName : " + "gocy")
 		fmt.Println("Version  : " + model.VERSION)
 		fmt.Println("Email    : Leyuan.Jia@Outlook.com")
@@ -172,22 +175,30 @@ func main() {
 	endTime := time.Now()
 	log.Infof("gocy finished. Process time %s. Number of active ip is %d.", endTime.Sub(startTime), len(sshHosts))
 
-	if *push != "" {
-		scpConfig := model.SCPConfig{
-			SshHosts:  clientConfig.SshHosts,
-			TimeLimit: clientConfig.TimeLimit,
-			NumLimit:  clientConfig.NumLimit,
-			SurPath:   *push,
-			DstPath:   *path,
-			Method:    "PUSH",
-		}
+	var srcList, destList []string
 
+	scpConfig := model.SCPConfig{
+		SshHosts:  clientConfig.SshHosts,
+		TimeLimit: clientConfig.TimeLimit,
+		NumLimit:  clientConfig.NumLimit,
+	}
+
+	if *push != "" {
+		for i := 0; i < len(sshHosts); i++ {
+			srcList = append(srcList, *push)
+			destList = append(destList, *path)
+		}
+		scpConfig.SrcPath = srcList
+		scpConfig.DestPath = destList
+
+		scpConfig.Method = "PUSH"
 		goscp.SecureCopyPushMakeDir(&scpConfig)
+		// scpConfig'SshHosts is equal clientConfig'SshHosts
 		sshResults, _ := client.LimitShhWithGroup(clientConfig)
 
-		scpResults, _ = goscp.LimitScpWithGroup(&scpConfig, sshResults)
+		scpResults, _ = client.LimitScpWithGroup(&scpConfig, sshResults)
 		for id, scpResult := range scpResults {
-			fmt.Printf("👇===============> %-15s <===============[%-3d]\n", "localhost", id)
+			fmt.Printf("👇===============> %4s@%-15s <===============[%-3d]\n", sshHosts[id].Username, "localhost", id)
 			if sshResults[id].Success {
 				fmt.Print(sshResults[id].Result)
 			}
@@ -198,20 +209,20 @@ func main() {
 	}
 
 	if *pull != "" {
-		scpConfig := model.SCPConfig{
-			SshHosts:  clientConfig.SshHosts,
-			TimeLimit: clientConfig.TimeLimit,
-			NumLimit:  clientConfig.NumLimit,
-			SurPath:   *pull,
-			DstPath:   *path,
-			Method:    "PULL",
+		for i := 0; i < len(sshHosts); i++ {
+			srcList = append(srcList, *pull)
+			destList = append(destList, *path)
 		}
+		scpConfig.SrcPath = srcList
+		scpConfig.DestPath = destList
 
+		scpConfig.Method = "PULL"
 		mkdirResults := goscp.SecureCopyPullMakeDir(&scpConfig)
-		scpResults, _ = goscp.LimitScpWithGroup(&scpConfig, mkdirResults)
+
+		scpResults, _ = client.LimitScpWithGroup(&scpConfig, mkdirResults)
 
 		for id, scpResult := range scpResults {
-			fmt.Printf("👇===============> %-15s <===============[%-3d]\n", "localhost", id)
+			fmt.Printf("👇===============> %4s@%-15s <===============[%-3d]\n", sshHosts[id].Username, "localhost", id)
 			if mkdirResults[id].Success {
 				fmt.Print(mkdirResults[id].Result)
 			}
@@ -227,7 +238,7 @@ func main() {
 	}
 
 	if *selection {
-		client.LoginHostByID(sshHosts, scpResults)
+		client.LoginHostByID(sshHosts, scpResults, "")
 	}
 
 }

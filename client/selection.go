@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func LoginHostByID(sshHosts []model.SSHHost, sshResult []model.RunResult) {
+func LoginHostByID(sshHosts []model.SSHHost, sshResult []model.RunResult, cmdLine string) {
 	var id int
 	if len(sshHosts) == 0 {
 		id = -1
@@ -27,7 +27,7 @@ func LoginHostByID(sshHosts []model.SSHHost, sshResult []model.RunResult) {
 			fmt.Println()
 
 		} else {
-			loginHost(sshHosts, sshResult, id)
+			loginHost(sshHosts, sshResult, id, cmdLine)
 			fmt.Println()
 		}
 	}
@@ -46,7 +46,7 @@ func showHostsList(sshResult []model.RunResult) {
 	// var status = map[bool]string{false: "\u001b[01;31m[x]\u001b[0m", true: "\u001b[01;32m[√]\u001b[0m"}
 	var status = map[bool]string{false: "[x]", true: "[√]"}
 	for idx, host := range sshResult {
-		fmt.Printf("%-3d : %-15s %s\n", idx, host.Host, status[host.Success])
+		fmt.Printf("%-3d : %5s@%-15s  %s\n", idx, host.Username, host.Host, status[host.Success])
 	}
 }
 
@@ -65,7 +65,7 @@ func selectHost() int {
 	return id
 }
 
-func loginHost(sshHosts []model.SSHHost, sshResults []model.RunResult, id int) {
+func loginHost(sshHosts []model.SSHHost, sshResults []model.RunResult, id int, cmdLine string) {
 	host := sshHosts[id]
 
 	if !sshResults[id].Success {
@@ -73,12 +73,12 @@ func loginHost(sshHosts []model.SSHHost, sshResults []model.RunResult, id int) {
 		fmt.Print(sshResults[id].Result)
 		return
 	}
+
 	fmt.Println()
-	fmt.Printf(">>> login into %v ...\n", host.Host)
-	err := ssh.GetInteractiveTerminal(host.Username, host.Password, host.Host, host.Key, host.Port, []string{}, []string{})
+	fmt.Printf(">>> login into %v ...\n", sshResults[id].Host)
+	err := ssh.GetInteractiveTerminal(host.Username, host.Password, host.Host, host.Key, host.Port, cmdLine, []string{}, []string{})
 	if err != nil {
 		log.Errorf("err:%v", err)
 	}
-	fmt.Printf("<<< logout from %v .\n", sshHosts[id].Host)
-
+	fmt.Printf("\n<<< logout from %v .", sshResults[id].Host)
 }

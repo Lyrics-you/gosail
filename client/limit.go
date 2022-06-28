@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"gosail/goscp"
 	ssh "gosail/gossh"
 	"gosail/logger"
 	"gosail/model"
@@ -14,7 +15,6 @@ func clinetSSHWitchChan(chLimit chan struct{}, ch chan model.RunResult, host mod
 	ssh.Dossh(host.Username, host.Password, host.Host, host.Key, host.CmdList, host.Port,
 		clientConfig.TimeLimit, clientConfig.CipherList, clientConfig.KeyExchangeList, host.LinuxMode,
 		ch)
-
 	<-chLimit
 	return nil
 }
@@ -30,9 +30,10 @@ func LimitShhWithChan(clientConfig *model.ClientConfig) ([]model.RunResult, erro
 		if err != nil {
 			log.Warnf("%s connect error, %v", host.Host, err)
 			chs[i] <- model.RunResult{
-				Host:    host.Host,
-				Success: false,
-				Result:  fmt.Sprintf("%s connect error, %v\n", host.Host, err),
+				Username: host.Username,
+				Host:     host.Host,
+				Success:  false,
+				Result:   fmt.Sprintf("%s connect error, %v\n", host.Host, err),
 			}
 		} else {
 			chLimit <- struct{}{}
@@ -53,33 +54,39 @@ func LimitShhWithChan(clientConfig *model.ClientConfig) ([]model.RunResult, erro
 	return sshResults, nil
 }
 
-func clinetSSHWithGroup(host model.SSHHost, clientConfig *model.ClientConfig, ch chan model.RunResult, wg *sync.WaitGroup) error {
+func clinetSSHWithGroup(chLimit chan struct{}, host model.SSHHost, clientConfig *model.ClientConfig, ch chan model.RunResult, wg *sync.WaitGroup) error {
 	ssh.Dossh(host.Username, host.Password, host.Host, host.Key, host.CmdList, host.Port,
 		clientConfig.TimeLimit, clientConfig.CipherList, clientConfig.KeyExchangeList, host.LinuxMode, ch)
 	wg.Done()
+	<-chLimit
 	return nil
 }
 
 func LimitShhWithGroup(clientConfig *model.ClientConfig) ([]model.RunResult, error) {
 	var wg sync.WaitGroup
-	wg.Add(clientConfig.NumLimit)
+	chLimit := make(chan struct{}, clientConfig.NumLimit) //control the number of concurrent visits
 	chs := make([]chan model.RunResult, len(clientConfig.SshHosts))
 
 	for i, host := range clientConfig.SshHosts {
-		chs[i] = make(chan model.RunResult, 1)
 
+		chs[i] = make(chan model.RunResult, 1)
 		err := checkParameterUH(&host)
 		if err != nil {
 			log.Warnf("%s connect error, %v", host.Host, err)
 			chs[i] <- model.RunResult{
-				Host:    host.Host,
-				Success: false,
-				Result:  fmt.Sprintf("%s connect error, %v\n", host.Host, err),
+				Host:     host.Host,
+				Username: host.Username,
+				Success:  false,
+				Result:   fmt.Sprintf("%s connect error, %v\n", host.Host, err),
 			}
 		} else {
-			go clinetSSHWithGroup(host, clientConfig, chs[i], &wg)
+			wg.Add(1)
+			chLimit <- struct{}{}
+			go clinetSSHWithGroup(chLimit, host, clientConfig, chs[i], &wg)
 		}
 	}
+
+	wg.Wait()
 
 	sshResults := []model.RunResult{}
 
@@ -90,6 +97,42 @@ func LimitShhWithGroup(clientConfig *model.ClientConfig) ([]model.RunResult, err
 		}
 
 	}
-	// wg.Wait()
+
 	return sshResults, nil
+}
+
+func LimitScpWithGroup(scpConfig *model.SCPConfig, runResults []model.RunResult) ([]model.RunResult, error) {
+	var wg sync.WaitGroup
+	chLimit := make(chan struct{}, scpConfig.NumLimit) //control the number of concurrent visits
+	chs := make([]chan model.RunResult, len(scpConfig.SshHosts))
+
+	for i, sshHosts := range scpConfig.SshHosts {
+
+		chs[i] = make(chan model.RunResult, 1)
+		if !runResults[i].Success {
+			chs[i] <- runResults[i]
+		} else {
+			wg.Add(1)
+			if scpConfig.Method == "PUSH" {
+				chLimit <- struct{}{}
+				go goscp.SecureCopyPushRun(chLimit, scpConfig.SrcPath[i], sshHosts.Username, sshHosts.Host, scpConfig.DestPath[i], chs[i], &wg)
+			} else {
+				tagPath := goscp.PathTagHost(scpConfig.DestPath[i], sshHosts.Host)
+				chLimit <- struct{}{}
+				go goscp.SecureCopyPullRun(chLimit, sshHosts.Username, sshHosts.Host, scpConfig.SrcPath[i], tagPath, chs[i], &wg)
+			}
+		}
+	}
+	wg.Wait()
+
+	ScpResults := []model.RunResult{}
+
+	for _, ch := range chs {
+		res := <-ch
+		if res.Result != "" {
+			ScpResults = append(ScpResults, res)
+		}
+
+	}
+	return ScpResults, nil
 }

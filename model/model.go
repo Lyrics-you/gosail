@@ -14,9 +14,10 @@ type SSHHost struct {
 }
 
 type RunResult struct {
-	Host    string
-	Success bool
-	Result  string
+	Host     string
+	Username string
+	Success  bool
+	Result   string
 }
 
 type HostJson struct {
@@ -41,7 +42,25 @@ type SCPConfig struct {
 	SshHosts  []SSHHost
 	NumLimit  int
 	TimeLimit int
-	SurPath   string
-	DstPath   string
+	SrcPath   []string
+	DestPath  []string
 	Method    string
+}
+
+type KubeConfig struct {
+	SshHosts  []SSHHost
+	PodsList  []string
+	Namespace string
+	AppName   string
+	Container string
+	Label     string
+}
+
+type KubePods struct {
+	MasterHost string
+	PodsName   []string
+	AppName    string
+	Label      string
+	Namespace  string
+	Container  string
 }

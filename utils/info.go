@@ -11,7 +11,6 @@ import (
 )
 
 var (
-	// errDstHostUnspecified = errors.New("dsthost is not specified")
 	ErrCantGetUsername = errors.New("cant get username")
 	ErrCantGetHost     = errors.New("cant get host")
 	ErrCantGetWorkDir  = errors.New("cant get work dir")

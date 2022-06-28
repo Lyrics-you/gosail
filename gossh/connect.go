@@ -107,6 +107,7 @@ func Dossh(username, password, host, key string, cmdlist []string, port, timeout
 	select {
 	case <-time.After(time.Duration(timeout) * time.Second):
 		res.Host = host
+		res.Username = username
 		res.Success = false
 		res.Result = ("ssh run timeout: " + strconv.Itoa(timeout) + " second.")
 		ch <- res
@@ -120,6 +121,7 @@ func dossh_session(username, password, host, key string, cmdlist []string, port 
 
 	var sshResult model.RunResult
 	sshResult.Host = host
+	sshResult.Username = username
 
 	if err != nil {
 		sshResult.Success = false
@@ -164,6 +166,7 @@ func dossh_run(username, password, host, key string, cmdlist []string, port int,
 	session, err := connectSession(username, password, host, key, port, cipherList, keyExchangeList)
 	var sshResult model.RunResult
 	sshResult.Host = host
+	sshResult.Username = username
 
 	if err != nil {
 		sshResult.Success = false
