@@ -3,7 +3,7 @@ A tool for batch execution of shh commands, programmed with go.
 
 一个使用go编写的批量执行ssh命令的工具。
 
-![image-20220613110917195](.\image-20220613110917195.png)
+![image-20220613110917195](https://github.com/Lyrics-you/gosail/blob/main/image-20220613110917195.png)
 
 ## 说明
 
@@ -306,7 +306,7 @@ Input id :
 
 试想两种需求，往多台主机上传递文件（push）,或者从多台主机上拉取文件（pull）。
 
-![image-20220613122328741](.\image-20220613122328741.png)
+![image-20220613122328741](https://github.com/Lyrics-you/gosail/blob/main/image-20220613122328741.png)
 
 ## 使用
 
@@ -418,9 +418,9 @@ Email : Leyuan.Jia@Outlook.com
 
 依赖于gosail的一个批量在k8s容器中执行命令工具
 
-![image-20220628194009292](.\image-20220628194009292.png)
+![image-20220628194009292](https://github.com/Lyrics-you/gosail/blob/main/image-20220628194009292.png)
 
-![image-20220628193758224](.\image-20220628193758224.png)
+![image-20220628193758224](https://github.com/Lyrics-you/gosail/blob/main/image-20220628193758224.png)
 
 ## 使用
 
