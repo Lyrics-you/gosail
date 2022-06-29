@@ -38,7 +38,7 @@ func main() {
 	timeLimit := flag.Int("tl", 30, "max timeout")
 	numLimit := flag.Int("nl", 20, "max execute number")
 
-	linuxMode := flag.Bool("l", false, "linux mode : multi command combine with && ,such as date&&cd /opt&&ls")
+	linuxMode := flag.Bool("lm", false, "linux mode : multi command combine with && ,such as date&&cd /opt&&ls")
 	selection := flag.Bool("s", false, "select host to login")
 
 	jsonMode := flag.Bool("j", false, "print output in json format")

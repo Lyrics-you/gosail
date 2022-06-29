@@ -78,6 +78,26 @@ func SecureCopyPullMakeDir(scpConfig *model.SCPConfig) []model.RunResult {
 	return mkdirResults
 }
 
+func SecureCopyPullTarFile(scpConfig *model.SCPConfig) {
+	for i := range scpConfig.SshHosts {
+		scpConfig.SshHosts[i].LinuxMode = true
+		scpConfig.SshHosts[i].CmdList = []string{
+			TarPullDestFileLine(scpConfig.SrcPath[i]),
+		}
+		scpConfig.SrcPath[i] += ".tar"
+	}
+}
+
+func SecureCopyPullDelFile(scpConfig *model.SCPConfig) {
+	for i := range scpConfig.SshHosts {
+		scpConfig.SshHosts[i].LinuxMode = true
+		scpConfig.SshHosts[i].CmdList = []string{
+			DelPullDestFileLine(scpConfig.SrcPath[i]),
+		}
+		scpConfig.SrcPath[i] += ".tar"
+	}
+}
+
 func PushFileCmd(srcPath, username, destHost, destPath string) *exec.Cmd {
 	// destHost : xxx.xxx.xxx.xxx
 	// scp -r srcPath username@destHost:destPath
@@ -124,6 +144,18 @@ func MakePushDestFileLine(destPath string) string {
 	// "mkdir -p tagPath"
 	mkdirLine := fmt.Sprintf("mkdir -p %s", destPath)
 	return mkdirLine
+}
+
+func TarPullDestFileLine(destPath string) string {
+	// "tar -zcvf "destPath.tar" "destPath"
+	tarLine := fmt.Sprintf("tar -zcvf %s.tar %s", destPath, destPath)
+	return tarLine
+}
+
+func DelPullDestFileLine(destPath string) string {
+	// "rm -rf destPath"
+	delLine := fmt.Sprintf("rm -rf %s", destPath)
+	return delLine
 }
 
 func SecureCopyPushRun(chLimit chan struct{}, srcPath, username, destHost, destPath string, ch chan model.RunResult, wg *sync.WaitGroup) {

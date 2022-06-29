@@ -419,9 +419,15 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub username@hostname
 
 `./gocy -hostfile "./examples/host-list" -push "root@192.168.245.131:/root/demo" -path "/root/demo/"`
 
-#### 登录主机
+### tar
 
-最后入 `-s` 可通过id登录主机，详情见gosail
+pull时，可添加`-tar`参数将远端的文件压缩后，进行拉取。
+
+`./gocy -hostfile "./examples/host-list" -pull "/root/demo/" -path "../demo/"· -tar`
+
+### 登录主机
+
+最后入`-s`可通过id登录主机，详情见gosail
 
 
 
@@ -563,6 +569,12 @@ pull功能底层使用gosail执行scp命令，所以，最好运行主机与目�
 [root@centos-7-01 192.168.245.133]# ls
 nginx-ingress-controller-5bb8fb4bb6-2ndh7  nginx-ingress-controller-5bb8fb4bb6-rgm4w  nginx-ingress-controller-5bb8fb4bb6-twmzv
 ```
+
+### tar
+
+pull时，可添加`-tar`参数将远端的文件压缩后，进行拉取。
+
+`./gobars -hostfile "../examples/host-list-k8s" -n ingress-nginx -c nginx-ingress-controller -copy -pull "/etc/nginx" -path "./demo/" -tar`
 
 ### 登录主机
 

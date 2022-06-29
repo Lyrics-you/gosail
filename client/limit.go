@@ -28,7 +28,7 @@ func LimitShhWithChan(clientConfig *model.ClientConfig) ([]model.RunResult, erro
 
 		err := checkParameterUH(&host)
 		if err != nil {
-			log.Warnf("%s connect error, %v", host.Host, err)
+			// log.Warnf("%s connect error, %v", host.Host, err)
 			chs[i] <- model.RunResult{
 				Username: host.Username,
 				Host:     host.Host,
@@ -72,7 +72,7 @@ func LimitShhWithGroup(clientConfig *model.ClientConfig) ([]model.RunResult, err
 		chs[i] = make(chan model.RunResult, 1)
 		err := checkParameterUH(&host)
 		if err != nil {
-			log.Warnf("%s connect error, %v", host.Host, err)
+			// log.Warnf("%s connect error, %v", host.Host, err)
 			chs[i] <- model.RunResult{
 				Host:     host.Host,
 				Username: host.Username,
@@ -95,9 +95,7 @@ func LimitShhWithGroup(clientConfig *model.ClientConfig) ([]model.RunResult, err
 		if res.Result != "" {
 			sshResults = append(sshResults, res)
 		}
-
 	}
-
 	return sshResults, nil
 }
 
@@ -106,20 +104,31 @@ func LimitScpWithGroup(scpConfig *model.SCPConfig, runResults []model.RunResult)
 	chLimit := make(chan struct{}, scpConfig.NumLimit) //control the number of concurrent visits
 	chs := make([]chan model.RunResult, len(scpConfig.SshHosts))
 
-	for i, sshHosts := range scpConfig.SshHosts {
-
+	for i, host := range scpConfig.SshHosts {
 		chs[i] = make(chan model.RunResult, 1)
-		if !runResults[i].Success {
+
+		err := checkParameterUH(&host)
+		if err != nil {
+			// log.Warnf("%s connect error, %v", host.Host, err)
+			chs[i] <- model.RunResult{
+				Host:     host.Host,
+				Username: host.Username,
+				Success:  false,
+				Result:   fmt.Sprintf("%s connect error, %v\n", host.Host, err),
+			}
+		} else if !runResults[i].Success {
 			chs[i] <- runResults[i]
 		} else {
 			wg.Add(1)
 			if scpConfig.Method == "PUSH" {
+				// PUSH
 				chLimit <- struct{}{}
-				go goscp.SecureCopyPushRun(chLimit, scpConfig.SrcPath[i], sshHosts.Username, sshHosts.Host, scpConfig.DestPath[i], chs[i], &wg)
+				go goscp.SecureCopyPushRun(chLimit, scpConfig.SrcPath[i], host.Username, host.Host, scpConfig.DestPath[i], chs[i], &wg)
 			} else {
-				tagPath := goscp.PathTagHost(scpConfig.DestPath[i], sshHosts.Host)
+				// PULL
+				tagPath := goscp.PathTagHost(scpConfig.DestPath[i], host.Host)
 				chLimit <- struct{}{}
-				go goscp.SecureCopyPullRun(chLimit, sshHosts.Username, sshHosts.Host, scpConfig.SrcPath[i], tagPath, chs[i], &wg)
+				go goscp.SecureCopyPullRun(chLimit, host.Username, host.Host, scpConfig.SrcPath[i], tagPath, chs[i], &wg)
 			}
 		}
 	}

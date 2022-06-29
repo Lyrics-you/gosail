@@ -30,6 +30,7 @@ func main() {
 	pull := flag.String("pull", "", "pull's source path")
 	push := flag.String("push", "", "push's source path")
 	path := flag.String("path", "", "pull or push's destination path")
+	tar := flag.Bool("tar", false, "tar pull's file")
 
 	username := flag.String("u", "", "username")
 	password := flag.String("p", "", "password")
@@ -162,7 +163,7 @@ func main() {
 		KeyExchangeList: keyExchangeList,
 	}
 
-	if *pull != "" && *push != "" {
+	if *pull == "" && *push == "" {
 		log.Errorf("push and pull cannot be used at the same time")
 		return
 	}
@@ -215,16 +216,31 @@ func main() {
 		}
 		scpConfig.SrcPath = srcList
 		scpConfig.DestPath = destList
-
 		scpConfig.Method = "PULL"
+
 		mkdirResults := goscp.SecureCopyPullMakeDir(&scpConfig)
 
+		var tarResults = []model.RunResult{}
+		// tar file
+		if *tar {
+			goscp.SecureCopyPullTarFile(&scpConfig)
+			tarResults, _ = client.LimitShhWithGroup(clientConfig)
+		}
+		//copy
 		scpResults, _ = client.LimitScpWithGroup(&scpConfig, mkdirResults)
+		// delete tar file
+		if *tar {
+			goscp.SecureCopyPullDelFile(&scpConfig)
+			client.LimitShhWithGroup(clientConfig)
+		}
 
 		for id, scpResult := range scpResults {
 			fmt.Printf("👇===============> %4s@%-15s <===============[%-3d]\n", sshHosts[id].Username, "localhost", id)
 			if mkdirResults[id].Success {
 				fmt.Print(mkdirResults[id].Result)
+			}
+			if tarResults[id].Success {
+				fmt.Print(tarResults[id].Result)
 			}
 			fmt.Print(scpResult.Result)
 			fmt.Println()

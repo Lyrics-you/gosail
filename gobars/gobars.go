@@ -49,6 +49,7 @@ func main() {
 	copy := flag.Bool("copy", false, "k8s cp function")
 	pull := flag.String("pull", "", "pull's source path")
 	path := flag.String("path", "", "pull's destination path")
+	tar := flag.Bool("tar", false, "tar pull's file")
 
 	selection := flag.Bool("s", false, "select host to login")
 	// linuxmode is true
@@ -244,8 +245,22 @@ func main() {
 			scpConfig.DestPath = destList
 
 			mkdirResults := goscp.SecureCopyPullMakeDir(&scpConfig)
-			sshResults, _ = client.LimitScpWithGroup(&scpConfig, mkdirResults)
 
+			// var tarResults = []model.RunResult{}
+			// tar file
+			if *tar {
+				goscp.SecureCopyPullTarFile(&scpConfig)
+				client.LimitShhWithGroup(clientConfig)
+			}
+			//copy
+			sshResults, _ = client.LimitScpWithGroup(&scpConfig, mkdirResults)
+			// delete tar file
+			if *tar {
+				goscp.SecureCopyPullDelFile(&scpConfig)
+				client.LimitShhWithGroup(clientConfig)
+			}
+
+			// delete k8s master's file
 			delHosts := gokube.MakeMultiDeleteSshHosts(kubePods, sshHosts, "./")
 			clientConfig.SshHosts = delHosts
 			client.LimitShhWithGroup(clientConfig)
