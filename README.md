@@ -319,7 +319,7 @@ cd gocy/ && go build .
 
 ## 参数
 
-#### 帮助
+### 帮助
 
 通过 -h -help -? 可以查看参数含义
 
@@ -360,7 +360,7 @@ cd gocy/ && go build .
   -v    show version
 ```
 
-#### 版本
+### 版本
 
 通过 -v 可以查看版本信息
 
@@ -373,6 +373,13 @@ Email : Leyuan.Jia@Outlook.com
 ### pull/push
 
 其他参数可以参考gosail使用，不多描述。
+
+pull/push，底层通过gosail执行scp命令，所以，最好运行主机与目标主机之间已经建立免密。
+
+```shell
+ssh-keygen
+ssh-copy-id -i ~/.ssh/id_rsa.pub username@hostname
+```
 
 #### pull
 
@@ -412,6 +419,10 @@ Email : Leyuan.Jia@Outlook.com
 
 `./gocy -hostfile "./examples/host-list" -push "root@192.168.245.131:/root/demo" -path "/root/demo/"`
 
+#### 登录主机
+
+最后入 `-s` 可通过id登录主机，详情见gosail
+
 
 
 # gobars
@@ -433,7 +444,7 @@ cd gobars/ && go build .
 
 ## 参数
 
-#### 帮助
+### 帮助
 
 通过 -h -help -? 可以查看参数含义
 
@@ -489,7 +500,7 @@ cd gobars/ && go build .
   -v    show version
 ```
 
-#### 版本
+### 版本
 
 通过 -v 可以查看版本信息
 
@@ -499,11 +510,11 @@ Version : x.x.x
 Email : Leyuan.Jia@Outlook.com
 ```
 
-#### cmdline
+### cmdline
 
 指定k8s的master集群地址、pod的namespace、容器名称以及执行命令，即可批量并发在pod中执行命令
 
-`./gobars -hostfile "..\examples\host-list-k8s" -n ingress-nginx -c nginx-ingress-controller -cmdline "date" `
+`./gobars -hostfile "../examples/host-list-k8s" -n ingress-nginx -c nginx-ingress-controller -cmdline "date" `
 
 ```shell
 👇===============> nginx-ingress-controller-5bb8fb4bb6-2ndh7 <===============[0  ]
@@ -521,22 +532,24 @@ Tue Jun 28 10:53:05 UTC 2022
 👌Finshed!
 ```
 
-#### pull
+### pull
 
-指定k8s的master集群地址、pod的namespace、容器名称，需要加入参数-scp
+指定k8s的master集群地址、pod的namespace、容器名称，需要加入参数-copy
+
+pull功能底层使用gosail执行scp命令，所以，最好运行主机与目标主机之间已经建立免密，详情见gocy。
 
 从pod批量并发拉取文件到本地，文件下每个pod的文件以各自名称作为区分。
 
-`./gobars -hostfile "..\examples\host-list-k8s" -n ingress-nginx -c nginx-ingress-controller -copy -pull "/etc/nginx" -path "./demo/"`
+`./gobars -hostfile "../examples/host-list-k8s" -n ingress-nginx -c nginx-ingress-controller -copy -pull "/etc/nginx" -path "./demo/"`
 
 ```shell
-👇===============> nginx-ingress-controller-5bb8fb4bb6-2ndh7 <===============[0  ]
+👇===============> nginx-ingress-controller-5bb8fb4bb6-2ndh7 (nginx-ingress-controller) <===============[0  ]
 /usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-2ndh7 ./demo/192.168.245.133/ Done!
 
-👇===============> nginx-ingress-controller-5bb8fb4bb6-rgm4w <===============[1  ]
+👇===============> nginx-ingress-controller-5bb8fb4bb6-rgm4w (nginx-ingress-controller) <===============[1  ]
 /usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-rgm4w ./demo/192.168.245.133/ Done!
 
-👇===============> nginx-ingress-controller-5bb8fb4bb6-twmzv <===============[2  ]
+👇===============> nginx-ingress-controller-5bb8fb4bb6-twmzv (nginx-ingress-controller) <===============[2  ]
 /usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-twmzv ./demo/192.168.245.133/ Done!
 
 👌Finshed!
@@ -551,3 +564,6 @@ Tue Jun 28 10:53:05 UTC 2022
 nginx-ingress-controller-5bb8fb4bb6-2ndh7  nginx-ingress-controller-5bb8fb4bb6-rgm4w  nginx-ingress-controller-5bb8fb4bb6-twmzv
 ```
 
+### 登录主机
+
+最后入 `-s` 可通过id登录主机，详情见gosail

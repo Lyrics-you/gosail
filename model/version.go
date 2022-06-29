@@ -35,7 +35,7 @@ package model
 // 0.9.5 : error: username is not specified error
 // 0.9.6 : move goscp limit function to client
 // 0.9.7 : change code's "sur" to "src", "dst" to "dest"
-
+// 0.9.8 : gobars' result show the container name
 // todo : gocy add tar function
 
 // furture : new way of interacting with commands

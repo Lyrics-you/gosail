@@ -1,4 +1,0 @@
-[submodule "documentation/OWASP-CRS-Documentation"]
-	path = documentation/OWASP-CRS-Documentation
-	url = https://github.com/SpiderLabs/OWASP-CRS-Documentation
-	branch = master

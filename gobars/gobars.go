@@ -274,7 +274,7 @@ func main() {
 
 	for id, sshResult := range sshResults {
 		sshResults[id].Host = kubeConfig.PodsList[id]
-		fmt.Printf("👇===============> %-15s <===============[%-3d]\n", sshResults[id].Host, id)
+		fmt.Printf("👇===============> %-15s (%s) <===============[%-3d]\n", sshResults[id].Host, *container, id)
 		if *cmdLine != "" {
 			fmt.Printf("👉 ------------> %s \n", *cmdLine)
 		}
