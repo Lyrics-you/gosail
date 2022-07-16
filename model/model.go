@@ -51,9 +51,12 @@ type KubeConfig struct {
 	SshHosts  []SSHHost
 	PodsList  []string
 	Namespace string
-	AppName   string
+	App       string
 	Container string
 	Label     string
+	Shell     string
+	Highlight string
+	CmdLine   string
 }
 
 type KubePods struct {
@@ -63,4 +66,17 @@ type KubePods struct {
 	Label      string
 	Namespace  string
 	Container  string
+	Shell      string
+	Highlight  string
 }
+
+type History struct {
+	Version     string
+	Description string
+}
+
+var (
+	LoginHost string
+	LoginUser string
+	LoginPwd  string
+)

@@ -26,7 +26,8 @@ func LoginPodByID(kubeConfig *model.KubeConfig, sshHosts []model.SSHHost, sshRes
 			fmt.Println()
 
 		} else {
-			execline := gokube.KubeExceLine(kubeConfig.PodsList[id], kubeConfig.Namespace, kubeConfig.Container, cmdLine)
+			execline := gokube.KubeExceLine(kubeConfig.PodsList[id], kubeConfig.Namespace, kubeConfig.Container, kubeConfig.Shell, cmdLine)
+			// println(execline)
 			loginHost(sshHosts, sshResult, id, execline)
 			fmt.Println()
 		}

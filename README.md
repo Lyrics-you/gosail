@@ -1,9 +1,11 @@
 # gosail
-A tool for batch execution of shh commands, programmed with go.
+gosail is a free and open source batch and concurrent command execution system,designed to execute commands on multiple servers or k8s pods and get results with speed and efficiency.You can also copy(pull or push) files by it.
 
-一个使用go编写的批量执行ssh命令的工具。
+gosail 是一个免费开源的批处理并发命令执行系统，旨在在多个服务器或 k8s pod 上执行命令并快速高效地获取结果。还可以通过它复制（拉取或推送）文件。
 
-![image-20220613110917195](https://github.com/Lyrics-you/gosail/blob/main/image-20220613110917195.png)
+<img src=".\gosail-exec.png" alt="gosail-exec" style="zoom: 50%;" />
+
+<img src=".\gosail-k8s-cli.png" alt="gosail-k8s-cli" style="zoom:50%;" />
 
 ## 说明
 
@@ -15,8 +17,7 @@ A tool for batch execution of shh commands, programmed with go.
 - 输出格式
 - 颜色支持
 - 输出适应窗口大小
-
-命令：**gosail位置** + **主机IP**（-hosts\\-hostsfile\ips\ipfiles) "对应IP填写方式" + **命令**（-cmdline\-cmdfile） "对应命令填写方式" + **用户**（-u,IP方式为user@hosts,**可省略**） + **密码**（-p,有密钥可以**省略**） + **密钥位置**（-k,有密码或者默认密钥位置,**可省略**） + **其他指令**（看需求）
+- 支持交互终端
 
 ## 使用
 
@@ -33,64 +34,99 @@ go build .
 
 ## 参数
 
-### 通用
+使用cobra框架
 
-#### 帮助
+### help
 
-通过 -h -help -? 可以查看参数含义
-
-```shell
-  -ciphers string
-        ciphers
-  -cmdfile string
-        cmdfile path
-  -cmdline string
-        command line
-  -config string
-        config file Path
-  -fpath string
-        write file path
-  -hostfile string
-        hostfile path
-  -hosts string
-        host address list
-  -ipfile string
-        ipfile path
-  -ips string
-        ip address list
-  -j    print output in json format
-  -k string
-        ssh private key
-  -keyexchanges string
-        keyexchanges
-  -l    linux mode : multi command combine with && ,such as date&&cd /opt&&ls
-  -nl int
-        max execute number (default 20)
-  -otxt
-        write result into txt
-  -p string
-        password
-  -port int
-        ssh port (default 22)
-  -s    select host to login
-  -tl int
-        max timeout (default 30)
-  -u string
-        username
-  -v    show version
-```
-
-#### 版本
-
-通过 -v 可以查看版本信息
+通过 --help -? 可以查看参数含义
 
 ```shell
-ToolName : gosail
-Version : x.x.x
-Email : Leyuan.Jia@Outlook.com
+gosail is a free and open source batch and concurrent command execution system,
+designed to execute commands on multiple servers or k8s pods and get results with speed and efficiency.
+You can also copy(pull or push) files by it.
+
+Usage:
+  gosail [flags]
+  gosail [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  help        Help about any command
+  login       Login host to do something
+  version     Version subcommand show gosail version info
+
+Flags:
+      --ciphers string        ssh ciphers
+      --config string         config
+  -?, --help                  help for this command
+      --hostfile string       for gosail cli loginhost
+  -K, --key string            id_rsa.pub key filepath
+      --keyexchanges string   ssh keyexchanges
+  -N, --numlimit int          max execute number (default 20)
+  -p, --password string       for gosail cli password
+  -T, --timelimit int         max timeout (default 30)
+  -u, --username string       for gosail cli username
+  -v, --version               gosail version
+
+Use "gosail [command] --help" for more information about a command.
 ```
 
-### 主机IP
+### version
+
+通过 `version` 可以查看版本信息, `-d`可以查看版本信息描述
+
+```shell
+Name          : gosail⛵
+Version       : x.x.x
+Email         : Leyuan.Jia@Outlook.com
+```
+
+### login
+
+`gosail login --help`
+
+```shell
+eg. : gosail login -h <hostfile> [-u "<username>"] [-p "<password>"] [--prot "<port>"]
+
+If the ssh port is 22, can omit port arg
+eg. : gosail login -h <hostfile> [-u "<username>"] [-p "<password>"]
+
+If the hostfile or hostline contain hosts in the format username@host, can omit u arg 
+eg. : gosail login -h <hostfile> [-p "<password>"]
+
+If specified the K arg or has default id_rsa.pub key, can omit p arg
+eg. : gosail login -h <hostfile>
+
+Usage:
+  gosail login [flags]
+  gosail login [command]
+
+Available Commands:
+  exec        Exec can execute commands concurrently and in batches on all hosts
+  k8s         K8s master to do something
+  pull        Pull can copy file from hosts concurrently, and create folders of host to distinguish
+  push        Pull can copy file to hosts concurrently, and create folders that do not exist       
+
+Flags:
+  -h, --hostfile string   hostfile
+      --hostline string   hostline
+  -i, --ipfile string     ipfile
+      --ipline string     ipline
+  -p, --password string   host password
+      --port int          ssh port (default 22)
+  -u, --username string   host username
+
+Global Flags:
+      --ciphers string        ssh ciphers
+      --config string         config
+  -?, --help                  help for this command
+  -K, --key string            id_rsa.pub key filepath
+      --keyexchanges string   ssh keyexchanges
+  -N, --numlimit int          max execute number (default 20)
+  -T, --timelimit int         max timeout (default 30)
+
+Use "gosail login [command] --help" for more information about a command.
+```
 
 #### 方式一：
 
@@ -100,15 +136,9 @@ IP指定时，需要加上共同用户名，通过-u指定，
 
 支持user@hosts方式，IP地址前可以加上username（root@192.168.245.131)，可以省略-u参数。
 
-#### -hosts:指定主机地址
+#### --hostline:指定主机地址
 
-命令如下：
-
-`.\gosail.exe -hosts "192.168.245.131;192.168.245.132"  -cmdline "ls" -u root -p qwerty`
-
-`.\gosail.exe -hosts "root@192.168.245.131;root@192.168.245.132"  -cmdline "ls" -p qwerty`
-
-#### -hostfile:指定主机地址文件
+#### --hostfile:指定主机地址文件
 
 主机地址每行写入，
 
@@ -116,56 +146,113 @@ IP指定时，需要加上共同用户名，通过-u指定，
 
 支持user@hosts方式，可以省略-u参数。
 
-命令如下：
-
-`.\gosail.exe -cmdline "date"  -hostfile ".\examples\host-list" -u root -p qwerty`
-
-hostfile
-
-```text
-192.168.245.131
-root@192.168.245.132
-root@192.168.245.133
-```
-
 #### 方式二:
 
-如果输入的是 IP （-ips 或 -ipfile），那么允许IP地址段方式的输入，例如 192.168.245.131-192.168.245.133。 
+如果输入的是 IP ，那么允许IP地址段方式的输入，例如 192.168.245.131-192.168.245.133。 
 
-#### -ips:指定主机IP段
+#### --ipline:指定主机IP段
 
 允许IP地址段方式的输入，
 
 需要加上共同用户名，通过-u指定
 
-命令如下：
-`.\gosail.exe -ips "192.168.245.131-192.168.245.132"  -cmdline "ls" -u root -p qwerty`
+#### --ipfile:指定主机IP段文件
 
-#### -ipfile:指定主机IP段文件
+主机地址每行写入，
 
-`.\gosail.exe -ipfile ".\examples\ip-list"  -cmdline "ls" -u root -p qwerty`
+IP指定时，需要加上共同用户名，通过-u指定，
 
-ipfile
+### k8s
 
-```text
-192.168.245.131-192.168.245.133
-101.132.145.243
+`gosail login k8s -?`
+
+```shell
+eg. : gosail login k8s -n "<namespace>" -a "<deployment.app>" [-c "<container>"]
+
+Usage:
+  gosail login k8s [flags]
+  gosail login k8s [command]
+
+Available Commands:
+  exec        Exec can execute commands concurrently and in batches on all specified pods
+  pull        Pull
+
+Flags:
+  -a, --app string         k8s deployment app
+  -c, --container string   deployment container
+  -l, --label string       deployment label
+  -n, --namespace string   k8s namespace
+      --shell string       container shell (default "sh")
+
+Global Flags:
+      --ciphers string        ssh ciphers
+      --config string         config
+  -?, --help                  help for this command
+  -h, --hostfile string       hostfile
+      --hostline string       hostline
+  -i, --ipfile string         ipfile
+      --ipline string         ipline
+  -K, --key string            id_rsa.pub key filepath
+      --keyexchanges string   ssh keyexchanges
+  -N, --numlimit int          max execute number (default 20)
+  -p, --password string       host password
+      --port int              ssh port (default 22)
+  -T, --timelimit int         max timeout (default 30)
+  -u, --username string       host username
+
+Use "gosail login k8s [command] --help" for more information about a command.
 ```
 
-### 命令行
+指定k8s的相关信息
 
-#### -cmdline:指定命令行
+后续exec\pull支持在k8s下使用
+
+### exec
+
+`gosail login exec -?`
+
+```shell
+eg. : gosail login exec [-e] "<cmdline>"
+eg. : gosail login exec -e "<cmdline>" mode [flags]
+eg. : gosail login exec --cmdfile "<cmdfile>"      
+
+Usage:
+  gosail login exec [flags]
+  gosail login exec [command]
+
+Available Commands:
+  mode        Mode offers choices of exec output formats
+
+Flags:
+      --cmdfile string   exec cmdfile
+  -e, --cmdline string   exec cmdline
+
+Global Flags:
+      --ciphers string        ssh ciphers
+      --config string         config
+  -?, --help                  help for this command
+  -h, --hostfile string       hostfile
+      --hostline string       hostline
+  -i, --ipfile string         ipfile
+      --ipline string         ipline
+  -K, --key string            id_rsa.pub key filepath
+      --keyexchanges string   ssh keyexchanges
+  -N, --numlimit int          max execute number (default 20)
+  -p, --password string       host password
+      --port int              ssh port (default 22)
+  -T, --timelimit int         max timeout (default 30)
+  -u, --username string       host username
+
+Use "gosail login exec [command] --help" for more information about a command.
+```
+
+#### --cmdline:指定命令行
 
 可以通过;分隔多个命令
 
-`.\gosail.exe -hostfile ".\examples\host-list" -cmdline "date;ls" -u root -p qwerty`
-
-### -cmdfile:指定命令行文件
+#### --cmdfile:指定命令行文件
 
 也可以通过文本来存放主机组和命令组，通过换行符分隔。
-
-命令如下：
-`.\gosail.exe -hostfile ".\examples\host-list" -cmdfile ".\examples\cmdfile" -u root -p qwerty`
 
 cmdfile
 
@@ -188,20 +275,45 @@ do
 done
 ```
 
-### 其他参数
+#### k8s
 
-#### -k SSH密钥
+不支持`cmdfile`,添加`-b`参数可以实现高亮
 
-支持使用 ssh 密钥认证，此时如果输入 password ，则为作为 key 的密码
+### mode
 
-命令如下：
-`.\gosail.exe -hostfile ".\example\host-list" -cmdline "ls" -u root -k "C:\Users\Taragrade\.ssh\id_rsa"`
+`gosail login exec mode -?` 
 
-默认密钥位置在 UserHomeDir的.ssh下的id_rsa
+```shell
+-j : use jsonmode to make the outpout with json format    
+-l : use linuxmode to make the output without the hostname
+-s : use selection to login hosts by their id
 
-keyPath := path.Join(homePath, ".ssh", "id_rsa")
+Usage:
+  gosail login exec mode [flags]
 
-`.\gosail.exe -hostfile ".\example\host-list" -cmdline "ls" -u root`
+Flags:
+  -j, --jsonmode    json mode
+  -l, --linuxmode   linux mode
+  -s, --selection   select host to login
+
+Global Flags:
+      --ciphers string        ssh ciphers
+      --cmdfile string        exec cmdfile
+  -e, --cmdline string        exec cmdline
+      --config string         config
+  -?, --help                  help for this command
+  -h, --hostfile string       hostfile
+      --hostline string       hostline
+  -i, --ipfile string         ipfile
+      --ipline string         ipline
+  -K, --key string            id_rsa.pub key filepath        
+      --keyexchanges string   ssh keyexchanges
+  -N, --numlimit int          max execute number (default 20)
+  -p, --password string       host password
+      --port int              ssh port (default 22)
+  -T, --timelimit int         max timeout (default 30)       
+  -u, --username string       host username
+```
 
 #### -l liunx模式
 
@@ -209,10 +321,95 @@ keyPath := path.Join(homePath, ".ssh", "id_rsa")
 
 不显示主机名，只有返回结果。
 
-命令如下：
-`.\gosail.exe -hostfile ".\example\host-list" -cmdline "cd /opt;ls" -u root -p qwerty -l`
+#### -j json格式输出
 
-#### -c json配置加载
+输出可以打成 json 格式，方便程序处理。
+
+#### -s select 选择主机登录
+
+可以通过输入id登录主机，并且显示主机是否可以登录的状态。
+
+```shell
+✋Server List:
+Enter the 0~2 to select the host, other input will exit!
+0   : 192.168.245.13  [x]
+1   : 192.168.245.132 [√]
+2   : 192.168.245.133 [√]
+Input id :
+```
+
+### pull 
+
+k8s pull 相同
+
+pull时，可添加`-tar`参数将远端的文件压缩后，进行拉取。
+
+从主机批量并发拉取文件到本地，本地文件支持相对路径以及其他主机目录（username@host:/path)，文件下每个主机的文件以各自主机名作为区分。
+
+```shell
+👇===============> nginx-ingress-controller-5bb8fb4bb6-2ndh7 (nginx-ingress-controller) <===============[0  ]
+/usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-2ndh7 ./demo/192.168.245.133/ Done!
+
+👇===============> nginx-ingress-controller-5bb8fb4bb6-rgm4w (nginx-ingress-controller) <===============[1  ]
+/usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-rgm4w ./demo/192.168.245.133/ Done!
+
+👇===============> nginx-ingress-controller-5bb8fb4bb6-twmzv (nginx-ingress-controller) <===============[2  ]
+/usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-twmzv ./demo/192.168.245.133/ Done!
+
+👌Finshed!
+```
+
+
+
+### push
+
+k8s没有该命令
+
+从本地批量并发推送文件到主机，本地文件支持相对路径以及其他主机目录（username@host:/path)
+
+```shell
+.
+├── 192.168.245.132
+│   └── examples
+│       ├── cmdfile
+│       ├── echodate
+│       ├── example-cmdfile
+│       ├── host-list
+│       ├── host-list-name
+│       ├── ip-list
+│       └── ssh.json
+└── 192.168.245.133
+    └── examples
+        ├── cmdfile
+        ├── echodate
+        ├── example-cmdfile
+        ├── host-list
+        ├── host-list-name
+        ├── ip-list
+        └── ssh.json
+```
+
+### 通用参数
+
+#### --ciphers/--keyexchanges
+
+ssh登录参数
+
+#### -K SSH密钥
+
+支持使用 ssh 密钥认证，此时如果输入 password ，则为作为 key 的密码
+
+默认密钥位置在 UserHomeDir的.ssh下的id_rsa
+
+keyPath := path.Join(homePath, ".ssh", "id_rsa")
+
+#### -N/-T 数量和超时控制
+
+-N 控制批量最大协程数
+
+-T 控制ssh结果超时时间，默认为秒
+
+#### --config json配置加载
 
 也可以为每个主机定义不同的配置参数，以 json 格式加载配置。
 
@@ -263,319 +460,69 @@ ssh.json
 }
 ```
 
-#### -j json格式输出
+## 交互终端
 
-输出可以打成 json 格式，方便程序处理。
-
-命令如下：
-
-`.\gosail.exe -c ".\examples\ssh.json" -j`
-
-#### -otxt 输出txt文件
-
-#### -path 输出文件位置
-
-也可以把输出结果存到以主机名命名的文本中，比如用来做配置备份
-
-命令如下：
-
-`.\gosail.exe -c ".\examples\ssh.json" -path "./" -otxt`
-
-#### -s select 选择主机登录
-
-可以通过输入id登录主机，并且显示主机是否可以登录的状态。
-
-命令如下：
-
-`.\gosail.exe -hostfile ".\examples\host-list" -cmdline "cd /etc && ls" -s`
+使用grumble框架
 
 ```shell
-✋Server List:
-Enter the 0~2 to select the host, other input will exit!
-0   : 192.168.245.13  [x]
-1   : 192.168.245.132 [√]
-2   : 192.168.245.133 [√]
-Input id :
+                        _ _  
+    __ _  ___  ___  __ _(_) | 
+   / _  |/ _ \/ _ |/ _  | | | 
+  |  g  |  o  \ s \  a  i   l 
+   \__, |\___/|___/\__,_|_|__|
+   |___/   
+
+⛵ x.x.x
+
+
+gosail is a free and open source batch and concurrent command execution system,
+designed to execute commands on multiple servers or k8s pods and get results with speed and efficiency.
+You can also copy(pull or push) files by it.
+
+Commands:
+=========
+  clear          clear the screen
+  exec           Exec can execute commands concurrently and in batches on all hosts and k8s pods
+  exit           exit the shell
+  help           use 'help [command]' for command help
+  login, select  Login host to do something
+  mode           Mode offers choices of exec output formats
+  pull           Pull can copy file from hosts or pods, and create folders to distinguish
+  push           Pull can copy file to hosts concurrently, and create folders that do not exist
+  set            Set the gosail config
+  show           Show the hosts
+
+Sub Commands:
+=============
+
+login:
+  k8s  K8s master to do something
 ```
 
+通过`gosail`或者`gosail --hostfile "<hostfile>" [-u "<username>"] [-p "<password">]`进入交互界面
 
+### login
 
-# gocy
+进入后通过`login`以及其参数加载宿主机的信息
 
-依赖于gosail的一个并发复制文件（pull\push)的工具。
+### set
 
-试想两种需求，往多台主机上传递文件（push）,或者从多台主机上拉取文件（pull）。
+设置 key\ciphers\keyexchanges\numlimit\timelimit等参数
 
-![image-20220613122328741](https://github.com/Lyrics-you/gosail/blob/main/image-20220613122328741.png)
+### show
 
-## 使用
+显示hosts
 
-### 编译
+### exec
 
-```go
-go get ./...
-cd gocy/ && go build .
-```
+批量在主机和k8s pod中执行命令，k8s支持通过`-b`高亮
 
-## 参数
+### mode
 
-### 帮助
+设置linuxmode\jsonmode\selection等参数
 
-通过 -h -help -? 可以查看参数含义
+k8s的linuxmode为false
 
-```shell
-  -ciphers string
-        ciphers
-  -config string
-        config file Path
-  -hostfile string
-        hostfile path
-  -hosts string
-        host address list
-  -ipfile string
-        ipfile path
-  -ips string
-        ip address list
-  -k string
-        ssh private key
-  -keyexchanges string
-        keyexchanges
-  -nl int
-        max execute number (default 20)
-  -p string
-        password
-  -path string
-        pull or push's destination path
-  -port int
-        ssh port (default 22)
-  -pull string
-        pull's source path
-  -push string
-        push's source path
-  -s    select host to login
-  -tl int
-        max timeout (default 30)
-  -u string
-        username
-  -v    show version
-```
+### pull和push
 
-### 版本
-
-通过 -v 可以查看版本信息
-
-```shell
-ToolName : gocy
-Version : x.x.x
-Email : Leyuan.Jia@Outlook.com
-```
-
-### pull/push
-
-其他参数可以参考gosail使用，不多描述。
-
-pull/push，底层通过gosail执行scp命令，所以，最好运行主机与目标主机之间已经建立免密。
-
-```shell
-ssh-keygen
-ssh-copy-id -i ~/.ssh/id_rsa.pub username@hostname
-```
-
-#### pull
-
-从主机批量并发拉取文件到本地，本地文件支持相对路径以及其他主机目录（username@host:/path)，文件下每个主机的文件以各自主机名作为区分。
-
-`./gocy -hostfile "./examples/host-list" -pull "/root/demo/" -path "../demo/" `
-
-`./gocy -hostfile "./examples/host-list" -pull "/root/demo/" -path "root@192.168.245.131:/root/demo"`
-
-```shell
-.
-├── 192.168.245.132
-│   └── examples
-│       ├── cmdfile
-│       ├── echodate
-│       ├── example-cmdfile
-│       ├── host-list
-│       ├── host-list-name
-│       ├── ip-list
-│       └── ssh.json
-└── 192.168.245.133
-    └── examples
-        ├── cmdfile
-        ├── echodate
-        ├── example-cmdfile
-        ├── host-list
-        ├── host-list-name
-        ├── ip-list
-        └── ssh.json
-```
-
-#### push
-
-从本地批量并发推送文件到主机，本地文件支持相对路径以及其他主机目录（username@host:/path)
-
-`./gocy -hostfile "./examples/host-list" -push "../demo" -path "/root/demo/"`
-
-`./gocy -hostfile "./examples/host-list" -push "root@192.168.245.131:/root/demo" -path "/root/demo/"`
-
-### tar
-
-pull时，可添加`-tar`参数将远端的文件压缩后，进行拉取。
-
-`./gocy -hostfile "./examples/host-list" -pull "/root/demo/" -path "../demo/"· -tar`
-
-### 登录主机
-
-最后入`-s`可通过id登录主机，详情见gosail
-
-
-
-# gobars
-
-依赖于gosail的一个批量在k8s容器中执行命令工具
-
-![image-20220628194009292](https://github.com/Lyrics-you/gosail/blob/main/image-20220628194009292.png)
-
-![image-20220628193758224](https://github.com/Lyrics-you/gosail/blob/main/image-20220628193758224.png)
-
-## 使用
-
-### 编译
-
-```go
-go get ./...
-cd gobars/ && go build .
-```
-
-## 参数
-
-### 帮助
-
-通过 -h -help -? 可以查看参数含义
-
-```shell
-  -app string
-        k8s app name    
-  -c string
-        k8s container   
-  -ciphers string       
-        ciphers
-  -cmdline string       
-        command line    
-  -config string        
-        config file Path
-  -fpath string
-        write file path
-  -hostfile string
-        hostfile path
-  -hosts string
-        host address list
-  -ipfile string
-        ipfile path
-  -ips string
-        ip address list
-  -j    print output in json format
-  -k string
-        ssh private key
-  -keyexchanges string
-        keyexchanges
-  -l string
-        k8s label
-  -n string
-        k8s namespace
-  -nl int
-        max execute number (default 20)
-  -otxt
-        write result into txt
-  -p string
-        password
-  -path string
-        pull's destination path
-  -port int
-        ssh port (default 22)
-  -pull string
-        pull's source path
-  -s    select host to login
-  -scp
-        k8s cp function
-  -tl int
-        max timeout (default 30)
-  -u string
-        username
-  -v    show version
-```
-
-### 版本
-
-通过 -v 可以查看版本信息
-
-```shell
-ToolName : gobars
-Version : x.x.x
-Email : Leyuan.Jia@Outlook.com
-```
-
-### cmdline
-
-指定k8s的master集群地址、pod的namespace、容器名称以及执行命令，即可批量并发在pod中执行命令
-
-`./gobars -hostfile "../examples/host-list-k8s" -n ingress-nginx -c nginx-ingress-controller -cmdline "date" `
-
-```shell
-👇===============> nginx-ingress-controller-5bb8fb4bb6-2ndh7 <===============[0  ]
-👉 ------------> date
-Tue Jun 28 10:53:05 UTC 2022
-
-👇===============> nginx-ingress-controller-5bb8fb4bb6-rgm4w <===============[1  ]
-👉 ------------> date
-Tue Jun 28 10:53:05 UTC 2022
-
-👇===============> nginx-ingress-controller-5bb8fb4bb6-twmzv <===============[2  ]
-👉 ------------> date
-Tue Jun 28 10:53:05 UTC 2022
-
-👌Finshed!
-```
-
-### pull
-
-指定k8s的master集群地址、pod的namespace、容器名称，需要加入参数-copy
-
-pull功能底层使用gosail执行scp命令，所以，最好运行主机与目标主机之间已经建立免密，详情见gocy。
-
-从pod批量并发拉取文件到本地，文件下每个pod的文件以各自名称作为区分。
-
-`./gobars -hostfile "../examples/host-list-k8s" -n ingress-nginx -c nginx-ingress-controller -copy -pull "/etc/nginx" -path "./demo/"`
-
-```shell
-👇===============> nginx-ingress-controller-5bb8fb4bb6-2ndh7 (nginx-ingress-controller) <===============[0  ]
-/usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-2ndh7 ./demo/192.168.245.133/ Done!
-
-👇===============> nginx-ingress-controller-5bb8fb4bb6-rgm4w (nginx-ingress-controller) <===============[1  ]
-/usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-rgm4w ./demo/192.168.245.133/ Done!
-
-👇===============> nginx-ingress-controller-5bb8fb4bb6-twmzv (nginx-ingress-controller) <===============[2  ]
-/usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-twmzv ./demo/192.168.245.133/ Done!
-
-👌Finshed!
-```
-
-```shell
-[root@centos-7-01 gobars]# cd demo/
-[root@centos-7-01 demo]# ls
-192.168.245.133
-[root@centos-7-01 demo]# cd 192.168.245.133/
-[root@centos-7-01 192.168.245.133]# ls
-nginx-ingress-controller-5bb8fb4bb6-2ndh7  nginx-ingress-controller-5bb8fb4bb6-rgm4w  nginx-ingress-controller-5bb8fb4bb6-twmzv
-```
-
-### tar
-
-pull时，可添加`-tar`参数将远端的文件压缩后，进行拉取。
-
-`./gobars -hostfile "../examples/host-list-k8s" -n ingress-nginx -c nginx-ingress-controller -copy -pull "/etc/nginx" -path "./demo/" -tar`
-
-### 登录主机
-
-最后入 `-s` 可通过id登录主机，详情见gosail
+同命令行中的参数，k8s不支持push

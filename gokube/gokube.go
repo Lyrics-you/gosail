@@ -14,7 +14,7 @@ func KubeGetPods(kubeConfig *model.KubeConfig) {
 			}
 		} else {
 			kubeConfig.SshHosts[id].CmdList = []string{
-				GetPodsLineByGrep(kubeConfig.Namespace, kubeConfig.AppName),
+				GetPodsLineByGrep(kubeConfig.Namespace, kubeConfig.App),
 			}
 		}
 	}
@@ -27,8 +27,10 @@ func GetPodsByResult(kubeConfig *model.KubeConfig, sshResults []model.RunResult)
 			MasterHost: sshResult.Host,
 			PodsName:   utils.SplitStringLine(sshResult.Result),
 			Namespace:  kubeConfig.Namespace,
-			AppName:    kubeConfig.AppName,
+			AppName:    kubeConfig.App,
 			Container:  kubeConfig.Container,
+			Shell:      kubeConfig.Shell,
+			Highlight:  kubeConfig.Highlight,
 		})
 		kubeConfig.PodsList = append(kubeConfig.PodsList, kubePods[id].PodsName...)
 	}
@@ -37,7 +39,7 @@ func GetPodsByResult(kubeConfig *model.KubeConfig, sshResults []model.RunResult)
 
 func GetPodsLineByGrep(namespace, appname string) string {
 	// offer : lujun
-	line := fmt.Sprintf("kubectl get pods -n %s | awk '{print $1}' | grep -P '%s(-\\w+){1,2}$'", namespace, appname)
+	line := fmt.Sprintf("kubectl get pods -n %s | awk '{print $1}' | grep -P '^%s(-\\w+){1,2}$'", namespace, appname)
 	return line
 }
 
@@ -56,7 +58,10 @@ func MakeMultiExecSshHosts(kubePods []model.KubePods, masterHosts []model.SSHHos
 	for id, pod := range kubePods {
 		masterHost := masterHosts[id]
 		for _, name := range pod.PodsName {
-			masterHost.CmdLine = KubeExceLine(name, pod.Namespace, pod.Container, cmdline)
+			masterHost.CmdLine = KubeExceLine(name, pod.Namespace, pod.Container, pod.Shell, cmdline)
+			if pod.Highlight != "" {
+				masterHost.CmdLine = PerlHightlight(masterHost.CmdLine, pod.Highlight)
+			}
 			masterHost.CmdList = []string{masterHost.CmdLine}
 			kubeHosts = append(kubeHosts, masterHost)
 		}
@@ -73,6 +78,7 @@ func MakeMultiCopySshHosts(kubePods []model.KubePods, masterHosts []model.SSHHos
 		masterHost := masterHosts[id]
 		for _, name := range pod.PodsName {
 			tagPath := fmt.Sprintf("%s/%s", destPath, name)
+
 			masterHost.CmdList = []string{
 				KubeCopyLine(pod.Namespace, name, pod.Container, srcPath, tagPath),
 			}
@@ -97,16 +103,23 @@ func MakeMultiDeleteSshHosts(kubePods []model.KubePods, masterHosts []model.SSHH
 	return kubeHosts
 }
 
-func KubeExceLine(podname, namespace, container, cmdline string) string {
+func KubeExceLine(podname, namespace, container, shell, cmdline string) string {
 	// kubectl exec -it -n namespace -c container -- /bin/bash -c 'command'
-	line := fmt.Sprintf("kubectl exec -it %s -n %s -c %s -- /bin/bash -c '%s'", podname, namespace, container, cmdline)
+	line := fmt.Sprintf("kubectl exec -it %s -n %s -c %s -- /bin/%s -c '%s'", podname, namespace, container, shell, cmdline)
 	return line
+}
+
+func PerlHightlight(line, key string) string {
+	// line | perl -pe "s/(${key})/\e[1;31m\$1\e[0m/g"
+	hline := fmt.Sprintf(`%s | perl -pe "s/(%s)/\e[1;31m\$1\e[0m/g"`, line, key)
+	return hline
 }
 
 func KubeCopyLine(namespace, podname, container, srcPath, destPath string) string {
 	// kubectl cp -c container srcPath destPath
 	// src=[namespace/[pod]]:file/path dest
-	line := fmt.Sprintf("kubectl cp -c %s %s/%s:%s %s", container, namespace, podname, srcPath, destPath)
+	filename := utils.GetPathLastName(srcPath)
+	line := fmt.Sprintf("kubectl cp -c %s %s/%s:%s %s/%s", container, namespace, podname, srcPath, destPath, filename)
 	return line
 }
 
