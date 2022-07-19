@@ -136,9 +136,9 @@ IP指定时，需要加上共同用户名，通过-u指定，
 
 支持user@hosts方式，IP地址前可以加上username（root@192.168.245.131)，可以省略-u参数。
 
-#### --hostline:指定主机地址
+#### --hostline 指定主机地址
 
-#### --hostfile:指定主机地址文件
+#### --hostfile 指定主机地址文件
 
 主机地址每行写入，
 
@@ -150,13 +150,13 @@ IP指定时，需要加上共同用户名，通过-u指定，
 
 如果输入的是 IP ，那么允许IP地址段方式的输入，例如 192.168.245.131-192.168.245.133。 
 
-#### --ipline:指定主机IP段
+#### --ipline 指定主机IP段
 
 允许IP地址段方式的输入，
 
 需要加上共同用户名，通过-u指定
 
-#### --ipfile:指定主机IP段文件
+#### --ipfile 指定主机IP段文件
 
 主机地址每行写入，
 
@@ -212,9 +212,9 @@ Use "gosail login k8s [command] --help" for more information about a command.
 `gosail login exec -?`
 
 ```shell
-eg. : gosail login exec [-e] "<cmdline>"
-eg. : gosail login exec -e "<cmdline>" mode [flags]
-eg. : gosail login exec --cmdfile "<cmdfile>"      
+eg. : gosail login exec [-b "<highlight>"] [-e] "<cmdline>" 
+eg. : gosail login exec -e "<cmdline>" [-b "<highlight>"] mode [flags]
+eg. : gosail login exec --cmdfile "<cmdfile>"
 
 Usage:
   gosail login exec [flags]
@@ -224,17 +224,18 @@ Available Commands:
   mode        Mode offers choices of exec output formats
 
 Flags:
-      --cmdfile string   exec cmdfile
-  -e, --cmdline string   exec cmdline
+      --cmdfile string     exec cmdfile
+  -e, --cmdline string     exec cmdline
+  -b, --highlight string   bold highlight for cmdline and linuxmode
 
 Global Flags:
       --ciphers string        ssh ciphers
       --config string         config
   -?, --help                  help for this command
+      --host string           hostline
   -h, --hostfile string       hostfile
-      --hostline string       hostline
+      --ip string             ipline
   -i, --ipfile string         ipfile
-      --ipline string         ipline
   -K, --key string            id_rsa.pub key filepath
       --keyexchanges string   ssh keyexchanges
   -N, --numlimit int          max execute number (default 20)
@@ -246,11 +247,11 @@ Global Flags:
 Use "gosail login exec [command] --help" for more information about a command.
 ```
 
-#### --cmdline:指定命令行
+#### --cmdline 指定命令行
 
 可以通过;分隔多个命令
 
-#### --cmdfile:指定命令行文件
+#### --cmdfile 指定命令行文件
 
 也可以通过文本来存放主机组和命令组，通过换行符分隔。
 
@@ -274,6 +275,10 @@ do
     echo $(date +"%Y-%m-%d %H:%M:%S")
 done
 ```
+
+#### -b:高亮
+
+只有在cmdline和linuxmode中才其作用，可以实现高亮
 
 #### k8s
 
@@ -358,8 +363,6 @@ pull时，可添加`-tar`参数将远端的文件压缩后，进行拉取。
 
 👌Finshed!
 ```
-
-
 
 ### push
 
@@ -516,6 +519,10 @@ login:
 ### exec
 
 批量在主机和k8s pod中执行命令，k8s支持通过`-b`高亮
+
+直接通过`exec`可进入循环执行命令行模式
+
+<img src="D:\Github\gosail\gosail-interact.png" alt="image-20220719210834603" style="zoom: 50%;" />
 
 ### mode
 
