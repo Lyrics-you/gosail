@@ -23,8 +23,7 @@ eg. : gosail login pull --src "<srcPath>" [--dest "<destPath>"]
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 	},
 	PersistentPostRun: func(_ *cobra.Command, _ []string) {
-		clientConfig, _ = cycle.GetClientConfig(config, keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
-		cycle.PullAndShow(clientConfig, &srcPath, &destPath, tar)
+		pull()
 	},
 	Args: func(_ *cobra.Command, args []string) error {
 		if srcPath == "" && destPath == "" && len(args) < 1 {
@@ -52,4 +51,8 @@ func init() {
 	pullCmd.Flags().StringVarP(&srcPath, "src", "", "", "exec cmdline")
 	pullCmd.Flags().StringVarP(&destPath, "dest", "", "", "exec cmdfile")
 	pullCmd.Flags().BoolVarP(&tar, "tar", "", false, "tar pull's file")
+}
+func pull() {
+	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	cycle.PullAndShow(clientConfig, &srcPath, &destPath, tar)
 }

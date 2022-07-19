@@ -57,7 +57,7 @@ Available Commands:
 
 Flags:
       --ciphers string        ssh ciphers
-      --config string         config
+      --config string         host execute config
   -?, --help                  help for this command
       --hostfile string       for gosail cli loginhost
   -K, --key string            id_rsa.pub key filepath
@@ -414,9 +414,9 @@ keyPath := path.Join(homePath, ".ssh", "id_rsa")
 
 #### --config json配置加载
 
-也可以为每个主机定义不同的配置参数，以 json 格式加载配置。
+也可以为每个主机定义不同的配置参数，执行不同的命令，以 json 格式加载配置。
 
-`.\gosail.exe -c ".\example\ssh.json"`
+`.\gosail.exe --config ".\example\ssh.json"`
 
 json配置参数：参考
 
@@ -453,10 +453,12 @@ ssh.json
             "Password": "",
             "key": "",
             "linuxMode": true,
-            "CmdFile": "cmdfile"
+            "CmdFile": "./examples/cmdfile"
         }
     ],
     "Global": {
+        "NumLimit": 20,
+        "TimeLimit": 30,
         "Ciphers": "aes128-ctr,aes192-ctr,aes256-ctr,aes128-cbc,3des-cbc",
         "KeyExchanges": "diffie-hellman-group1-sha1,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha1"
     }

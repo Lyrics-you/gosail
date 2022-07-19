@@ -61,7 +61,7 @@ func k8sPull() {
 		log.Errorf("container or app name is not specified")
 		return
 	}
-	clientConfig, _ = cycle.GetClientConfig(config, keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
+	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
 	kubeConfig := &model.KubeConfig{
 		SshHosts:  clientConfig.SshHosts,
 		Namespace: namespace,

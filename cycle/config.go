@@ -16,33 +16,26 @@ var (
 	log = logger.Logger()
 )
 
-func GetClientConfig(config, keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key string, port, numLimit, timeLimit int, linuxMode bool) (*model.ClientConfig, error) {
+func GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key string, port, numLimit, timeLimit int, linuxMode bool) (*model.ClientConfig, error) {
 	clientConfig := &model.ClientConfig{}
 	clientConfig.NumLimit = numLimit
 	clientConfig.TimeLimit = timeLimit
-	if config == "" {
-		clientConfig.KeyExchangeList = utils.SplitString(keyExchanges)
-		clientConfig.KeyExchangeList = utils.SplitString(keyExchanges)
-		clientConfig.CipherList = utils.SplitString(ciphers)
-		hostList, err := utils.GetHostList(&hostLine, &hostFile, &ipLine, &ipFile)
-		if err != nil {
-			return clientConfig, err
-		}
-		var cmdList []string
-		if linuxMode {
-			cmdList = []string{cmdLine}
-		} else {
-			cmdList, err = utils.GetCmdList(&cmdLine, &cmdFile)
-		}
-		clientConfig.SshHosts = MakeSshHosts(hostList, cmdList, &username, &password, &key, port, &linuxMode)
-		if err != nil {
-			return clientConfig, err
-		}
+	clientConfig.KeyExchangeList = utils.SplitString(keyExchanges)
+	clientConfig.KeyExchangeList = utils.SplitString(keyExchanges)
+	clientConfig.CipherList = utils.SplitString(ciphers)
+	hostList, err := utils.GetHostList(&hostLine, &hostFile, &ipLine, &ipFile)
+	if err != nil {
+		return clientConfig, err
+	}
+	var cmdList []string
+	if linuxMode {
+		cmdList = []string{cmdLine}
 	} else {
-		clientConfig, err := makeClientConfigFromJson(config)
-		if err != nil {
-			return clientConfig, err
-		}
+		cmdList, err = utils.GetCmdList(&cmdLine, &cmdFile)
+	}
+	clientConfig.SshHosts = MakeSshHosts(hostList, cmdList, &username, &password, &key, port, &linuxMode)
+	if err != nil {
+		return clientConfig, err
 	}
 	return clientConfig, nil
 }
@@ -79,7 +72,7 @@ func MakeSshHosts(hostList, cmdList []string, username, password, key *string, p
 	return sshHosts
 }
 
-func makeClientConfigFromJson(config string) (*model.ClientConfig, error) {
+func MakeClientConfigFromJson(config string) (*model.ClientConfig, error) {
 	sshHostConfig, err := utils.GetJson(config)
 	if err != nil {
 		log.Errorf("load config error, %v", err)
@@ -107,5 +100,7 @@ func makeClientConfigFromJson(config string) (*model.ClientConfig, error) {
 		SshHosts:        sshHosts,
 		CipherList:      cipherList,
 		KeyExchangeList: keyExchangeList,
+		NumLimit:        sshHostConfig.Global.NumLimit,
+		TimeLimit:       sshHostConfig.Global.TimeLimit,
 	}, nil
 }

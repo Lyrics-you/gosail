@@ -80,7 +80,7 @@ func readCommand() {
 }
 
 func exec() {
-	clientConfig, err = cycle.GetClientConfig("", keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	clientConfig, err = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
 	if err != nil {
 		log.Error(err)
 		return

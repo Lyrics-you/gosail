@@ -16,7 +16,7 @@ var (
 
 func interExec() {
 	cmdLine = fmt.Sprintf(`cd %s;%s;echo -e "\n"$(pwd)`, workPath, cmdLine)
-	clientConfig, err = cycle.GetClientConfig("", keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	clientConfig, err = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
 	if err != nil {
 		log.Error(err)
 		return
@@ -70,7 +70,7 @@ func interK8sExec() {
 		cmdLine = fmt.Sprintf(`%s;echo -e "\n"$(pwd)`, cmdLine)
 	}
 
-	clientConfig, err := cycle.GetClientConfig("", keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
+	clientConfig, err := cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
 	if err != nil {
 		log.Error(err)
 		return

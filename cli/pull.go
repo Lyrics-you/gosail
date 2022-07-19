@@ -44,6 +44,6 @@ func setPullArgs(c *grumble.Context) {
 }
 
 func pull() {
-	clientConfig, _ = cycle.GetClientConfig("", keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
 	cycle.PullAndShow(clientConfig, &srcPath, &destPath, tar)
 }

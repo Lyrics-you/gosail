@@ -54,7 +54,7 @@ func k8sExec() {
 		log.Errorf("container or app name is not specified")
 		return
 	}
-	clientConfig, err := cycle.GetClientConfig(config, keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
+	clientConfig, err := cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
 	if err != nil {
 		log.Error(err)
 		return

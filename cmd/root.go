@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"gosail/cli"
+	"gosail/client"
 	"gosail/cycle"
 	"gosail/model"
 
@@ -49,13 +50,17 @@ You can also copy(pull or push) files by it.`,
 		if len(args) == 1 {
 			cycle.LoginHost = args[0]
 		}
+	},
+	PersistentPostRun: func(_ *cobra.Command, _ []string) {
+		if config != "" {
+			configExec()
+			return
+		}
 		if !version {
 			grumble.Main(cli.Gosail)
 		} else {
 			showVersion()
 		}
-	},
-	PersistentPostRun: func(cmd *cobra.Command, args []string) {
 	},
 }
 
@@ -67,7 +72,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&key, "key", "K", "", "id_rsa.pub key filepath")
 	rootCmd.PersistentFlags().StringVarP(&ciphers, "ciphers", "", "", "ssh ciphers")
 	rootCmd.PersistentFlags().StringVarP(&keyExchanges, "keyexchanges", "", "", "ssh keyexchanges")
-	rootCmd.PersistentFlags().StringVarP(&config, "config", "", "", "config")
+	rootCmd.Flags().StringVarP(&config, "config", "", "", "host execute config")
 	// limit
 	rootCmd.PersistentFlags().IntVarP(&timeLimit, "timelimit", "T", 30, "max timeout")
 	rootCmd.PersistentFlags().IntVarP(&numLimit, "numlimit", "N", 20, "max execute number")
@@ -79,4 +84,17 @@ func init() {
 
 func Execute() {
 	rootCmd.Execute()
+}
+
+func configExec() {
+	clientConfig, err := cycle.MakeClientConfigFromJson(config)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	sshResults := cycle.Exec(clientConfig)
+	cycle.ShowExecResult(clientConfig.SshHosts, sshResults, &jsonMode, &linuxMode)
+	if selection {
+		client.LoginHostByID(clientConfig.SshHosts, sshResults, "")
+	}
 }

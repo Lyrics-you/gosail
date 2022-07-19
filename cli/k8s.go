@@ -36,7 +36,7 @@ func setK8sArgs(c *grumble.Context) {
 }
 
 func k8sExec() {
-	clientConfig, err := cycle.GetClientConfig("", keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
+	clientConfig, err := cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
 	if err != nil {
 		log.Error(err)
 		return
@@ -59,7 +59,7 @@ func k8sExec() {
 }
 
 func k8sPull() {
-	clientConfig, _ = cycle.GetClientConfig("", keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
+	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
 	kubeConfig := &model.KubeConfig{
 		SshHosts:  clientConfig.SshHosts,
 		Namespace: namespace,

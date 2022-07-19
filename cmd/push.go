@@ -18,8 +18,7 @@ eg. : gosail login push --src "<srcPath>" [--dest "<destPath>"]
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 	},
 	PersistentPostRun: func(_ *cobra.Command, _ []string) {
-		clientConfig, _ = cycle.GetClientConfig(config, keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
-		cycle.PushAndShow(clientConfig, &srcPath, &destPath)
+		push()
 	},
 	Args: func(_ *cobra.Command, args []string) error {
 		if srcPath == "" && destPath == "" && len(args) < 1 {
@@ -46,4 +45,8 @@ func init() {
 	// copy
 	pushCmd.Flags().StringVarP(&srcPath, "src", "", "", "exec cmdline")
 	pushCmd.Flags().StringVarP(&destPath, "dest", "", "", "exec cmdfile")
+}
+func push() {
+	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	cycle.PushAndShow(clientConfig, &srcPath, &destPath)
 }

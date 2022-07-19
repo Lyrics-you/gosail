@@ -121,7 +121,9 @@ var (
 		}, {Version: "0.12.4",
 			Description: "fix gobars container name and gosail -v problem",
 		}, {Version: "0.12.5",
-			Description: "fix interactive commands pwd get error",
+			Description: "fix interactive commands pwd get probelm",
+		}, {Version: "0.12.6",
+			Description: "fix config exection probelm",
 		},
 	}
 )

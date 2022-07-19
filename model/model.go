@@ -13,21 +13,22 @@ type SSHHost struct {
 	Result    RunResult `json:"-"`
 }
 
-type RunResult struct {
-	Host     string
-	Username string
-	Success  bool
-	Result   string
+type GlobalConfig struct {
+	NumLimit     int
+	TimeLimit    int
+	Ciphers      string
+	KeyExchanges string
 }
 
 type HostJson struct {
 	Hosts  []SSHHost
 	Global GlobalConfig
 }
-
-type GlobalConfig struct {
-	Ciphers      string
-	KeyExchanges string
+type RunResult struct {
+	Host     string
+	Username string
+	Success  bool
+	Result   string
 }
 
 type ClientConfig struct {

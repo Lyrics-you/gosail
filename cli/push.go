@@ -33,6 +33,6 @@ func setPushArgs(c *grumble.Context) {
 }
 
 func push() {
-	clientConfig, _ = cycle.GetClientConfig("", keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
 	cycle.PushAndShow(clientConfig, &srcPath, &destPath)
 }
