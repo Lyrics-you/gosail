@@ -86,7 +86,6 @@ func interK8sExec() {
 		CmdLine:   cmdLine,
 	}
 	sshResults := cycle.K8sExec(clientConfig, kubeConfig)
-	fmt.Println(cmdLine)
 	workPath = getPWDPath(sshResults[0].Result, 2)
 	kubeConfig.CmdLine = before
 	interK8sShowResults(sshResults, kubeConfig, &jsonMode)
