@@ -522,7 +522,7 @@ login:
 
 直接通过`exec`可进入循环执行命令行模式
 
-<img src="D:\Github\gosail\gosail-interact.png" alt="gosail-interact" style="zoom: 50%;" />
+<img src=".\gosail-interact.png" alt="gosail-interact" style="zoom: 50%;" />
 
 ### mode
 
