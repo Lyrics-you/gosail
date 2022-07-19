@@ -3,6 +3,7 @@ package cmd
 import (
 	"gosail/client"
 	"gosail/cycle"
+	"gosail/gokube"
 
 	"github.com/spf13/cobra"
 )
@@ -15,18 +16,22 @@ var execCmd = &cobra.Command{
 	Use:   "exec",
 	Short: "Exec can execute commands concurrently and in batches on all hosts",
 	Long: `
-eg. : gosail login exec [-e] "<cmdline>"
-eg. : gosail login exec -e "<cmdline>" mode [flags]
+eg. : gosail login exec [-b "<highlight>"] [-e] "<cmdline>" 
+eg. : gosail login exec -e "<cmdline>" [-b "<highlight>"] mode [flags]
 eg. : gosail login exec --cmdfile "<cmdfile>"
+
 `,
 	TraverseChildren: true,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 	},
-	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+	PersistentPostRun: func(_ *cobra.Command, _ []string) {
+		if cmdLine != "" && linuxMode && highlight != "" {
+			cmdLine = gokube.PerlHightlight(cmdLine, highlight)
+		}
 		exec()
 	},
 	// Args: cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if len(args) == 1 {
 			cmdLine = args[0]
 		}
@@ -38,6 +43,7 @@ func init() {
 	// model
 	execCmd.PersistentFlags().StringVarP(&cmdLine, "cmdline", "e", "", "exec cmdline")
 	execCmd.PersistentFlags().StringVarP(&cmdFile, "cmdfile", "", "", "exec cmdfile")
+	execCmd.PersistentFlags().StringVarP(&highlight, "highlight", "b", "", "bold highlight for cmdline and linuxmode")
 }
 
 func exec() {

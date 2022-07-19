@@ -18,13 +18,13 @@ eg. : gosail k8s exec [-e] "<cmdline>" -b "<highlight>"
 	`,
 	TraverseChildren: true,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		linuxMode = true
+
 	},
-	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+	PersistentPostRun: func(_ *cobra.Command, _ []string) {
 		k8sExec()
 	},
 	// Args: cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 
 		if len(args) == 1 {
 			cmdLine = args[0]
@@ -44,7 +44,17 @@ func init() {
 }
 
 func k8sExec() {
-	clientConfig, err := cycle.GetClientConfig(config, keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	if container == "" {
+		container = app
+	}
+	if app == "" {
+		app = container
+	}
+	if container == "" && app == "" && label == "" {
+		log.Errorf("container or app name is not specified")
+		return
+	}
+	clientConfig, err := cycle.GetClientConfig(config, keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
 	if err != nil {
 		log.Error(err)
 		return

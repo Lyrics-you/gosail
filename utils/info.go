@@ -16,6 +16,7 @@ var (
 	ErrCantGetHost     = errors.New("cant get host")
 	ErrCantGetWorkDir  = errors.New("cant get work dir")
 	ErrCmdListEmpty    = errors.New("commands is empty")
+	ErrHostListEmpty   = errors.New("hosts is empty")
 )
 
 func GetAbsFilePath(path string) (string, error) {
@@ -111,6 +112,9 @@ func GetHostList(hostLine, hostFile, ipLine, ipFile *string) ([]string, error) {
 			// log.Errorf("load iplist error, %v", err)
 			return []string{}, fmt.Errorf("load iplist error, %v", err)
 		}
+		if len(hostList) == 0 {
+			return []string{}, ErrHostListEmpty
+		}
 		return hostList, nil
 	}
 
@@ -119,6 +123,9 @@ func GetHostList(hostLine, hostFile, ipLine, ipFile *string) ([]string, error) {
 		if err != nil {
 			// log.Errorf("load hostfile error, %v", err)
 			return []string{}, fmt.Errorf("load hostfile error, %v", err)
+		}
+		if len(hostList) == 0 {
+			return []string{}, ErrHostListEmpty
 		}
 		return hostList, nil
 	}
@@ -129,11 +136,17 @@ func GetHostList(hostLine, hostFile, ipLine, ipFile *string) ([]string, error) {
 			// log.Errorf("load iplist error, %v", err)
 			return []string{}, fmt.Errorf("load hostfile error, %v", err)
 		}
+		if len(hostList) == 0 {
+			return []string{}, ErrHostListEmpty
+		}
 		return hostList, nil
 	}
 
 	if *hostLine != "" {
 		hostList = SplitString(*hostLine)
+	}
+	if len(hostList) == 0 {
+		return []string{}, ErrHostListEmpty
 	}
 	return hostList, nil
 }
@@ -161,4 +174,25 @@ func GetCmdList(cmdLine, cmdFile *string) ([]string, error) {
 	}
 
 	return []string{}, ErrCmdListEmpty
+}
+
+func SimpleLine(str string, n int, m int) string {
+	for i := 0; i < n; i++ {
+		s := strings.Index(str, "\n")
+		if s != -1 {
+			str = str[s+1:]
+		} else {
+			break
+		}
+	}
+	for i := 0; i < m; i++ {
+		e := strings.LastIndex(str, "\n")
+		if e != -1 {
+			str = str[:e]
+		} else {
+			break
+		}
+	}
+	str += "\n"
+	return str
 }

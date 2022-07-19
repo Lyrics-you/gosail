@@ -28,7 +28,12 @@ func GetClientConfig(config, keyExchanges, ciphers, cmdLine, cmdFile, hostLine, 
 		if err != nil {
 			return clientConfig, err
 		}
-		cmdList, err := utils.GetCmdList(&cmdLine, &cmdFile)
+		var cmdList []string
+		if linuxMode {
+			cmdList = []string{cmdLine}
+		} else {
+			cmdList, err = utils.GetCmdList(&cmdLine, &cmdFile)
+		}
 		clientConfig.SshHosts = MakeSshHosts(hostList, cmdList, &username, &password, &key, port, &linuxMode)
 		if err != nil {
 			return clientConfig, err

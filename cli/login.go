@@ -34,7 +34,7 @@ func init() {
 		},
 		Run: func(c *grumble.Context) error {
 			setLoginArgs(c)
-			file := utils.GetPathLastName(hostFile)
+			file = utils.GetPathLastName(hostFile)
 			c.App.SetPrompt(fmt.Sprintf("gosail [%s] » ", file))
 			hostList, err = utils.GetHostList(&hostLine, &hostFile, &ipLine, &ipFile)
 			sshHosts = cycle.MakeSshHosts(hostList, []string{}, &username, &password, &key, 22, &linuxMode)
@@ -50,7 +50,7 @@ func init() {
 		Flags: func(f *grumble.Flags) {
 			f.String("n", "namespace", "", "namespace")
 			f.String("a", "app", "", "app")
-			f.String("c", "container", ".", "container")
+			f.String("c", "container", "", "container")
 			f.String("", "label", "", "label")
 			f.String("", "shell", "sh", "container shell")
 
@@ -58,7 +58,7 @@ func init() {
 		Run: func(c *grumble.Context) error {
 			setLoginArgs(c)
 			setK8sArgs(c)
-			file := utils.GetPathLastName(hostFile)
+			file = utils.GetPathLastName(hostFile)
 			c.App.SetPrompt(fmt.Sprintf("gosail [%s %s/%s] » ", file, namespace, app))
 			hostList, err = utils.GetHostList(&hostLine, &hostFile, &ipLine, &ipFile)
 			sshHosts = cycle.MakeSshHosts(hostList, []string{}, &username, &password, &key, 22, &linuxMode)
@@ -70,6 +70,7 @@ func init() {
 }
 
 func setLoginArgs(c *grumble.Context) {
+	isK8s = false
 	h := c.Flags.String("hostfile")
 	if h != "" {
 		hostFile = h

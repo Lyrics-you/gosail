@@ -22,11 +22,21 @@ func setK8sArgs(c *grumble.Context) {
 	namespace = c.Flags.String("namespace")
 	app = c.Flags.String("app")
 	container = c.Flags.String("container")
+	label = c.Flags.String("label")
+	if container == "" {
+		container = app
+	}
+	if app == "" {
+		app = container
+	}
+	if container == "" && app == "" && label == "" {
+		log.Errorf("container or app name is not specified")
+		return
+	}
 }
 
 func k8sExec() {
-	linuxMode = true
-	clientConfig, err := cycle.GetClientConfig("", keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	clientConfig, err := cycle.GetClientConfig("", keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
 	if err != nil {
 		log.Error(err)
 		return
@@ -49,8 +59,7 @@ func k8sExec() {
 }
 
 func k8sPull() {
-	linuxMode = true
-	clientConfig, _ = cycle.GetClientConfig("", keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	clientConfig, _ = cycle.GetClientConfig("", keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
 	kubeConfig := &model.KubeConfig{
 		SshHosts:  clientConfig.SshHosts,
 		Namespace: namespace,

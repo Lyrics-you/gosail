@@ -22,7 +22,7 @@ eg. : gosail login -h <hostfile>
 	// TraverseChildren: true,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 	},
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if len(args) > 0 {
 			// cmd.Error(cmd, args, errors.New("unrecognized command"))
 			return
@@ -34,9 +34,9 @@ eg. : gosail login -h <hostfile>
 func init() {
 	rootCmd.AddCommand(loginCmd)
 	//login
-	loginCmd.PersistentFlags().StringVarP(&hostLine, "hostline", "", "", "hostline")
+	loginCmd.PersistentFlags().StringVarP(&hostLine, "host", "", "", "hostline")
 	loginCmd.PersistentFlags().StringVarP(&hostFile, "hostfile", "h", "", "hostfile")
-	loginCmd.PersistentFlags().StringVarP(&ipLine, "ipline", "", "", "ipline")
+	loginCmd.PersistentFlags().StringVarP(&ipLine, "ip", "", "", "ipline")
 	loginCmd.PersistentFlags().StringVarP(&ipFile, "ipfile", "i", "", "ipfile")
 
 	loginCmd.PersistentFlags().StringVarP(&username, "username", "u", "", "host username")

@@ -1,8 +1,13 @@
 package cli
 
 import (
+	"bufio"
+	"fmt"
 	"gosail/client"
 	"gosail/cycle"
+	"gosail/gokube"
+	"gosail/utils"
+	"os"
 	"strings"
 
 	"github.com/desertbit/grumble"
@@ -27,10 +32,17 @@ func init() {
 		},
 		Run: func(c *grumble.Context) error {
 			setExecArgs(c)
-			if isK8s {
-				k8sExec()
+			if cmdLine == "" {
+				readCommand()
 			} else {
-				exec()
+				if isK8s {
+					k8sExec()
+				} else {
+					if linuxMode && highlight != "" {
+						cmdLine = gokube.PerlHightlight(cmdLine, highlight)
+					}
+					exec()
+				}
 			}
 			return nil
 		},
@@ -39,12 +51,32 @@ func init() {
 }
 
 func setExecArgs(c *grumble.Context) {
+	workPath = "~"
 	cmdLine = c.Flags.String("cmdline")
 	if cmdLine == "" {
 		command = c.Args.StringList("command")
 		cmdLine = strings.Join(command, " ")
 	}
 	highlight = c.Flags.String("highlight")
+}
+
+func readCommand() {
+	var command string
+	for {
+		path := utils.GetPathLastName(workPath)
+		fmt.Printf("gosail [%s %s] exec » ", file, path)
+		reader := bufio.NewReader(os.Stdin)
+		command, _ = reader.ReadString('\n')
+		cmdLine = strings.TrimRight(command, "\r\n")
+		if cmdLine == "exit" || cmdLine == "quit" {
+			return
+		}
+		if isK8s {
+			interK8sExec()
+		} else {
+			interExec()
+		}
+	}
 }
 
 func exec() {

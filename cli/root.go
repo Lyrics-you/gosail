@@ -21,6 +21,7 @@ var (
 	password     = cycle.LoginPwd
 )
 var (
+	file         string
 	loginCommand *grumble.Command
 	clientConfig *model.ClientConfig = &model.ClientConfig{}
 )
@@ -32,8 +33,8 @@ designed to execute commands on multiple servers or k8s pods and get results wit
 You can also copy(pull or push) files by it.`,
 	HistoryFile:           "/tmp/gosail.journal",
 	Prompt:                "gosail » ",
-	PromptColor:           color.New(color.FgBlue, color.Bold),
-	HelpHeadlineColor:     color.New(color.FgBlue),
+	PromptColor:           color.New(color.FgBlack, color.Bold),
+	HelpHeadlineColor:     color.New(color.FgBlack),
 	HelpHeadlineUnderline: true,
 	HelpSubCommands:       true,
 	Flags: func(f *grumble.Flags) {
@@ -57,7 +58,7 @@ func init() {
 		a.Println(model.EMOJI["gosail"], version.Version)
 	})
 	setInitArgs()
-	file := utils.GetPathLastName(hostFile)
+	file = utils.GetPathLastName(hostFile)
 	if file == "" {
 		file = "(none)"
 	}

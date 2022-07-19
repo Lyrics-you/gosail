@@ -20,7 +20,7 @@ func init() {
 		Flags: func(f *grumble.Flags) {
 
 		},
-		Run: func(c *grumble.Context) error {
+		Run: func(_ *grumble.Context) error {
 			show()
 			return nil
 		},
@@ -32,7 +32,7 @@ func show() {
 	if !isK8s {
 		fmt.Println("Hosts:")
 	} else {
-		fmt.Println("K8s master:")
+		fmt.Println("K8S master:")
 	}
 	for _, host := range sshHosts {
 		fmt.Printf("%s@%s\n", host.Username, host.Host)

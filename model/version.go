@@ -112,6 +112,16 @@ var (
 		},
 		{Version: "0.12.0",
 			Description: "new command line interaction with grumle",
+		}, {Version: "0.12.1",
+			Description: "Modify the login related parameter names",
+		}, {Version: "0.12.2",
+			Description: "interactive commands can record the path of the last execution",
+		}, {Version: "0.12.3",
+			Description: "host exec highlight args support for cmdline and linuxmode",
+		}, {Version: "0.12.4",
+			Description: "fix gobars container name and gosail -v problem",
+		}, {Version: "0.12.5",
+			Description: "fix interactive commands pwd get error",
 		},
 	}
 )

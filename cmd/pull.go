@@ -22,11 +22,11 @@ eg. : gosail login pull --src "<srcPath>" [--dest "<destPath>"]
 `,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 	},
-	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+	PersistentPostRun: func(_ *cobra.Command, _ []string) {
 		clientConfig, _ = cycle.GetClientConfig(config, keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
 		cycle.PullAndShow(clientConfig, &srcPath, &destPath, tar)
 	},
-	Args: func(cmd *cobra.Command, args []string) error {
+	Args: func(_ *cobra.Command, args []string) error {
 		if srcPath == "" && destPath == "" && len(args) < 1 {
 			return errors.New("pull requires srcpath and destpath 2 args, destpath default is '.'")
 		}
@@ -35,7 +35,7 @@ eg. : gosail login pull --src "<srcPath>" [--dest "<destPath>"]
 		}
 		return nil
 	},
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if srcPath == "" && len(args) == 1 {
 			srcPath = args[0]
 		}

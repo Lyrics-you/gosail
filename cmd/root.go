@@ -49,7 +49,11 @@ You can also copy(pull or push) files by it.`,
 		if len(args) == 1 {
 			cycle.LoginHost = args[0]
 		}
-		grumble.Main(cli.Gosail)
+		if !version {
+			grumble.Main(cli.Gosail)
+		} else {
+			showVersion()
+		}
 	},
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
 	},
