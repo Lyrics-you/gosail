@@ -123,7 +123,7 @@ var (
 		}, {Version: "0.12.5",
 			Description: "fix interactive commands pwd get probelm",
 		}, {Version: "0.12.6",
-			Description: "fix config exection probelm",
+			Description: "fix config execution probelm",
 		},
 	}
 )
