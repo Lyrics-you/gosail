@@ -1,15 +1,14 @@
 package cli
 
 import (
-	"bufio"
 	"fmt"
 	"gosail/client"
 	"gosail/cycle"
 	"gosail/gokube"
 	"gosail/utils"
-	"os"
 	"strings"
 
+	"github.com/abiosoft/readline"
 	"github.com/desertbit/grumble"
 )
 
@@ -22,7 +21,7 @@ var (
 func init() {
 	execCommand := &grumble.Command{
 		Name: "exec",
-		Help: "Exec can execute commands concurrently and in batches on all hosts and k8s pods",
+		Help: "Exec can execute commands concurrently and in batches on all hosts and k8s pods, no args to exec mode",
 		Args: func(a *grumble.Args) {
 			a.StringList("command", "command line", grumble.Default([]string{}))
 		},
@@ -33,7 +32,7 @@ func init() {
 		Run: func(c *grumble.Context) error {
 			setExecArgs(c)
 			if cmdLine == "" {
-				readCommand()
+				return readCommand()
 			} else {
 				if isK8s {
 					k8sExec()
@@ -60,16 +59,40 @@ func setExecArgs(c *grumble.Context) {
 	highlight = c.Flags.String("highlight")
 }
 
-func readCommand() {
-	var command string
+func readCommand() error {
+	interConfig := &readline.Config{
+		// Prompt: "> ",
+		// HistorySearchFold:      true,
+		// DisableAutoSaveHistory: false,
+		// HistoryFile:  "/tmp/gosail_exec.journal",
+		HistoryLimit: Gosail.Config().HistoryLimit,
+		// AutoComplete:           cli.Gosail.Config(),
+	}
+	if isK8s {
+		interConfig.HistoryFile = "/tmp/gosail_k8s.journal"
+	} else {
+		interConfig.HistoryFile = "/tmp/gosail_exec.journal"
+	}
+	rl, err := readline.NewEx(interConfig)
+	if err != nil {
+		return err
+	}
+	defer rl.Close()
+	// var command string
 	for {
 		path := utils.GetPathLastName(workPath)
-		fmt.Printf("gosail [%s %s] exec » ", file, path)
-		reader := bufio.NewReader(os.Stdin)
-		command, _ = reader.ReadString('\n')
+		rl.SetPrompt(fmt.Sprintf("gosail [%s %s] exec » ", file, path))
+		command, err := rl.Readline()
 		cmdLine = strings.TrimRight(command, "\r\n")
+		if err != nil { // io.EOF
+			break
+		}
 		if cmdLine == "exit" || cmdLine == "quit" {
-			return
+			return nil
+		}
+		if cmdLine == "clear" {
+			readline.ClearScreen(rl)
+			return readCommand()
 		}
 		if isK8s {
 			interK8sExec()
@@ -77,6 +100,7 @@ func readCommand() {
 			interExec()
 		}
 	}
+	return nil
 }
 
 func exec() {

@@ -125,7 +125,11 @@ var (
 		}, {Version: "0.12.6",
 			Description: "fix config execution probelm",
 		},
+		{Version: "0.13.0",
+			Description: "new exec mode with readline, support save the client, exec and k8s exec history execution commands separately and clear screen",
+		},
 	}
 )
 
+// furture : autoCompleter for exec mode
 // furture : dynamic display of the command execution process

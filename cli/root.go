@@ -33,8 +33,8 @@ designed to execute commands on multiple servers or k8s pods and get results wit
 You can also copy(pull or push) files by it.`,
 	HistoryFile:           "/tmp/gosail.journal",
 	Prompt:                "gosail » ",
-	PromptColor:           color.New(color.FgBlue, color.Bold),
-	HelpHeadlineColor:     color.New(color.FgBlue),
+	PromptColor:           color.New(color.FgHiWhite, color.Bold),
+	HelpHeadlineColor:     color.New(color.FgHiWhite),
 	HelpHeadlineUnderline: true,
 	HelpSubCommands:       true,
 	Flags: func(f *grumble.Flags) {

@@ -526,6 +526,10 @@ login:
 
 <img src=".\gosail-interact.png" alt="gosail-interact" style="zoom: 50%;" />
 
+`clear`可以清理多余屏幕
+
+`Ctrl+C`、`exit`或者`quit`可以退出
+
 ### mode
 
 设置linuxmode\jsonmode\selection等参数

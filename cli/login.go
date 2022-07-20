@@ -43,7 +43,7 @@ func init() {
 	}
 	k8sCommand := &grumble.Command{
 		Name: "k8s",
-		Help: "K8s master to do something",
+		Help: "K8s master to do something, need login first",
 		Args: func(a *grumble.Args) {
 
 		},
