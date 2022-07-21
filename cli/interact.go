@@ -57,8 +57,13 @@ func interShowExecResult(sshHosts []model.SSHHost, sshResults []model.RunResult,
 
 func getPWDPath(result string, lastline int) string {
 	resList := strings.Split(result, "\n")
-	pwdPath := resList[len(resList)-lastline]
-	pwdPath = strings.TrimRight(pwdPath, "\r\n")
+	var pwdPath string
+	if len(resList)-lastline >= 0 {
+		pwdPath = resList[len(resList)-lastline]
+		pwdPath = strings.TrimRight(pwdPath, "\r\n")
+	} else {
+		pwdPath = workPath
+	}
 	return pwdPath
 }
 

@@ -127,6 +127,15 @@ var (
 		},
 		{Version: "0.13.0",
 			Description: "new exec mode with readline, support save the client, exec and k8s exec history execution commands separately and clear screen",
+		}, {Version: "0.13.1",
+			Description: "change interact exec cmdline from stringlist to string",
+		}, {Version: "0.13.2",
+			Description: "fix interactive commands timeout probelm and cli commands context problem",
+		}, {Version: "0.13.3",
+			Description: "interactive commands exec mode disable tab key",
+		},
+		{Version: "0.14.0",
+			Description: "add select color to set prompt",
 		},
 	}
 )

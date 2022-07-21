@@ -81,6 +81,14 @@ Version       : x.x.x
 Email         : Leyuan.Jia@Outlook.com
 ```
 
+### color
+
+通过上下键选择颜色
+
+共有black/red/green/yellow/blue/magenta/white几种
+
+<img src=".\gosail-color.png" alt="gosail-color" style="zoom: 50%;" />
+
 ### login
 
 `gosail login --help`

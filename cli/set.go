@@ -15,8 +15,8 @@ func init() {
 			f.String("K", "key", "", "id_rsa.pub key filepath")
 			f.String("", "ciphers", "", "ssh ciphers")
 			f.String("", "keyexchanges", "", "ssh keyexchangesx")
-			f.Int("", "numlimit", 20, "max timeout")
-			f.Int("", "timelimit", 30, "max execute number")
+			f.Int("N", "numlimit", 20, "max timeout")
+			f.Int("T", "timelimit", 30, "max execute number")
 		},
 		Run: func(c *grumble.Context) error {
 			setSetArgs(c)

@@ -15,7 +15,6 @@ import (
 var (
 	cmdLine   string
 	highlight string
-	command   []string
 )
 
 func init() {
@@ -23,7 +22,8 @@ func init() {
 		Name: "exec",
 		Help: "Exec can execute commands concurrently and in batches on all hosts and k8s pods, no args to exec mode",
 		Args: func(a *grumble.Args) {
-			a.StringList("command", "command line", grumble.Default([]string{}))
+			a.String("cmdline", "command line", grumble.Default(""))
+			a.String("highlight", "bold highlight", grumble.Default(""))
 		},
 		Flags: func(f *grumble.Flags) {
 			f.String("e", "cmdline", "", "command line")
@@ -51,12 +51,8 @@ func init() {
 
 func setExecArgs(c *grumble.Context) {
 	workPath = "~"
-	cmdLine = c.Flags.String("cmdline")
-	if cmdLine == "" {
-		command = c.Args.StringList("command")
-		cmdLine = strings.Join(command, " ")
-	}
-	highlight = c.Flags.String("highlight")
+	cmdLine = GetValue(c, "cmdline", "").(string)
+	highlight = GetValue(c, "highlight", "").(string)
 }
 
 func readCommand() error {
@@ -64,9 +60,8 @@ func readCommand() error {
 		// Prompt: "> ",
 		// HistorySearchFold:      true,
 		// DisableAutoSaveHistory: false,
-		// HistoryFile:  "/tmp/gosail_exec.journal",
 		HistoryLimit: Gosail.Config().HistoryLimit,
-		// AutoComplete:           cli.Gosail.Config(),
+		AutoComplete: &NoTab{},
 	}
 	if isK8s {
 		interConfig.HistoryFile = "/tmp/gosail_k8s.journal"
@@ -81,12 +76,13 @@ func readCommand() error {
 	// var command string
 	for {
 		path := utils.GetPathLastName(workPath)
-		rl.SetPrompt(fmt.Sprintf("gosail [%s %s] exec » ", file, path))
+		prompt = fmt.Sprintf("gosail [%s %s] exec » ", file, path)
+		rl.SetPrompt(prompt)
 		command, err := rl.Readline()
-		cmdLine = strings.TrimRight(command, "\r\n")
 		if err != nil { // io.EOF
 			break
 		}
+		cmdLine = strings.TrimRight(command, "\r\n")
 		if cmdLine == "exit" || cmdLine == "quit" {
 			return nil
 		}

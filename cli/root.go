@@ -5,6 +5,7 @@ import (
 	"gosail/cycle"
 	"gosail/model"
 	"gosail/utils"
+	"os"
 
 	"github.com/desertbit/grumble"
 	"github.com/fatih/color"
@@ -21,7 +22,9 @@ var (
 	password     = cycle.LoginPwd
 )
 var (
-	file         string
+	file         = "(none)"
+	prompt       = "gosail » "
+	promptColor  = color.New(color.FgWhite, color.Bold)
 	loginCommand *grumble.Command
 	clientConfig *model.ClientConfig = &model.ClientConfig{}
 )
@@ -32,9 +35,9 @@ gosail is a free and open source batch and concurrent command execution system,
 designed to execute commands on multiple servers or k8s pods and get results with speed and efficiency.
 You can also copy(pull or push) files by it.`,
 	HistoryFile:           "/tmp/gosail.journal",
-	Prompt:                "gosail » ",
-	PromptColor:           color.New(color.FgHiWhite, color.Bold),
-	HelpHeadlineColor:     color.New(color.FgHiWhite),
+	Prompt:                prompt,
+	PromptColor:           promptColor,
+	HelpHeadlineColor:     promptColor,
 	HelpHeadlineUnderline: true,
 	HelpSubCommands:       true,
 	Flags: func(f *grumble.Flags) {
@@ -46,8 +49,8 @@ You can also copy(pull or push) files by it.`,
 		f.String("K", "key", "", "id_rsa.pub key filepath")
 		f.String("", "ciphers", "", "ssh ciphers")
 		f.String("", "keyexchanges", "", "ssh keyexchangesx")
-		f.Int("T", "numlimit", 20, "max timeout")
-		f.Int("N", "timelimit", 30, "max execute number")
+		f.Int("T", "timelimit", 30, "max timeout")
+		f.Int("N", "numlimit", 20, "max execute number")
 	},
 })
 
@@ -62,7 +65,15 @@ func init() {
 	if file == "" {
 		file = "(none)"
 	}
-	Gosail.SetPrompt(fmt.Sprintf("gosail [%s] » ", file))
+	prompt = fmt.Sprintf("gosail [%s] » ", file)
+	Gosail.SetPrompt(prompt)
+	Gosail.SetInterruptHandler(func(a *grumble.App, count int) {
+		if count >= 2 {
+			a.Println("👌Finshed!")
+			os.Exit(0)
+		}
+		a.Println("input Ctrl-c once more to exit")
+	})
 }
 
 func setInitArgs() {
