@@ -4,7 +4,7 @@
             "Port": 22,
             "Username": "root",
             "Password": "qwerty",
-            "cmds": "ls"
+            "CmdLine": "ls"
         },
         {
             "Host": "192.168.80.132",

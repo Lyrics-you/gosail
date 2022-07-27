@@ -29,7 +29,7 @@ func setPseudoTerminal(session *ssh.Session) error {
 }
 
 func GetInteractiveTerminal(username, password, host, key string, port int, cmdLine string, cipherList, keyExchangeList []string) error {
-	client, err := connect(username, password, host, key, port, cipherList, keyExchangeList)
+	client, err := Connect(username, password, host, key, port, cipherList, keyExchangeList)
 	if err != nil {
 		return err
 	}

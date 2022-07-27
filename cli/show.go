@@ -32,7 +32,7 @@ func show() {
 	if !isK8s {
 		fmt.Println("Hosts:")
 	} else {
-		fmt.Println("K8S master:")
+		fmt.Println("K8s master:")
 	}
 	for _, host := range sshHosts {
 		fmt.Printf("%s@%s\n", host.Username, host.Host)

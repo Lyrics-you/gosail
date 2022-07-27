@@ -2,7 +2,7 @@ package client
 
 import (
 	"fmt"
-	ssh "gosail/gossh"
+	"gosail/gossh"
 	"gosail/model"
 	"strconv"
 )
@@ -76,7 +76,7 @@ func loginHost(sshHosts []model.SSHHost, sshResults []model.RunResult, id int, c
 
 	fmt.Println()
 	fmt.Printf(">>> login into %v ...\n", sshResults[id].Host)
-	err := ssh.GetInteractiveTerminal(host.Username, host.Password, host.Host, host.Key, host.Port, cmdLine, []string{}, []string{})
+	err := gossh.GetInteractiveTerminal(host.Username, host.Password, host.Host, host.Key, host.Port, cmdLine, []string{}, []string{})
 	if err != nil {
 		log.Errorf("err:%v", err)
 	}

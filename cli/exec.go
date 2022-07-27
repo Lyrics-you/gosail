@@ -64,9 +64,9 @@ func readCommand() error {
 		AutoComplete: &NoTab{},
 	}
 	if isK8s {
-		interConfig.HistoryFile = "/tmp/gosail_k8s.journal"
+		interConfig.HistoryFile = fmt.Sprintf("/tmp/%s_gosail_k8s.journal", whoami)
 	} else {
-		interConfig.HistoryFile = "/tmp/gosail_exec.journal"
+		interConfig.HistoryFile = fmt.Sprintf("/tmp/%s_gosail_exec.journal", whoami)
 	}
 	rl, err := readline.NewEx(interConfig)
 	if err != nil {
@@ -77,13 +77,18 @@ func readCommand() error {
 	for {
 		path := utils.GetPathLastName(workPath)
 		prompt = fmt.Sprintf("gosail [%s %s] exec » ", file, path)
+		prompt = promptColor.SprintFunc()(prompt)
 		rl.SetPrompt(prompt)
 		command, err := rl.Readline()
+		if err == readline.ErrInterrupt {
+			fmt.Println("exit from exec interaction...")
+		}
 		if err != nil { // io.EOF
 			break
 		}
 		cmdLine = strings.TrimRight(command, "\r\n")
 		if cmdLine == "exit" || cmdLine == "quit" {
+			fmt.Println("exit from exec interaction...")
 			return nil
 		}
 		if cmdLine == "clear" {

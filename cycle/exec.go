@@ -23,7 +23,7 @@ func ShowExecResult(sshHosts []model.SSHHost, sshResults []model.RunResult, json
 		return
 	}
 	for id, sshResult := range sshResults {
-		fmt.Printf("👇===============> %4s@%-15s <===============[%-3d]\n", sshHosts[id].Username, sshResult.Host, id)
+		fmt.Printf("👇===============> %4s@%-15s <===============[%-3d]\n", sshResult.Username, sshResult.Host, id)
 		if !*linuxMode && sshResult.Success {
 			sshResult.Result = utils.SimpleLine(sshResult.Result, len(sshHosts[id].CmdList)+2, 3)
 		}

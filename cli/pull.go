@@ -10,27 +10,38 @@ var (
 	srcPath  string
 	destPath string
 	tar      bool
+	scp      bool
 )
 
 func init() {
 	pullCommand := &grumble.Command{
-		Name: "pull",
-		Help: "Pull can copy file from hosts or pods, and create folders to distinguish",
+		Aliases: []string{"download"},
+		Name:    "pull",
+		Help:    "Pull can copy file from hosts or pods, and create folders to distinguish",
 		Args: func(a *grumble.Args) {
-			a.String("src", "srcPath", grumble.Default(""))
-			a.String("dest", "destPath", grumble.Default("."))
+			a.String("src", "source path", grumble.Default(""))
+			a.String("dest", "destination path", grumble.Default("."))
 		},
 		Flags: func(f *grumble.Flags) {
-			f.Bool("", "tar", false, "tar")
-			f.String("", "src", "", "srcPath")
-			f.String("", "dest", ".", "destPath")
+			f.Bool("", "tar", false, "tar pull's file")
+			f.Bool("", "scp", false, "pull file by scp")
+			f.String("", "src", "", "source path")
+			f.String("", "dest", ".", "destination path")
 		},
 		Run: func(c *grumble.Context) error {
 			setPullArgs(c)
 			if isK8s {
-				k8sPull()
+				if scp {
+					k8sPull()
+				} else {
+					k8sDownload()
+				}
 			} else {
-				pull()
+				if scp {
+					pull()
+				} else {
+					download()
+				}
 			}
 			return nil
 		},
@@ -41,9 +52,17 @@ func init() {
 func setPullArgs(c *grumble.Context) {
 	srcPath = GetValue(c, "src", "").(string)
 	destPath = GetValue(c, "dest", ".").(string)
+	tar = c.Flags.Bool("tar")
+	scp = c.Flags.Bool("scp")
+	cmdLine = ""
 }
 
 func pull() {
 	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
 	cycle.PullAndShow(clientConfig, &srcPath, &destPath, tar)
+}
+
+func download() {
+	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	cycle.DownloadAndShow(clientConfig, &srcPath, &destPath, tar)
 }

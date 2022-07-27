@@ -136,6 +136,13 @@ var (
 		},
 		{Version: "0.14.0",
 			Description: "add select color to set prompt",
+		}, {Version: "0.14.1",
+			Description: "history save separately",
+		}, {Version: "0.14.2",
+			Description: "fix k8s exec interaction result problem",
+		},
+		{Version: "0.15.0",
+			Description: "pull or push file by sftp, scp needs secret-free",
 		},
 	}
 )

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"gosail/cli"
 	"gosail/client"
 	"gosail/cycle"
@@ -58,6 +59,7 @@ You can also copy(pull or push) files by it.`,
 		}
 		if !version {
 			grumble.Main(cli.Gosail)
+			fmt.Println("👌Finshed!")
 		} else {
 			showVersion()
 		}

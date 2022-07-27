@@ -5,8 +5,9 @@ import (
 )
 
 var loginCmd = &cobra.Command{
-	Use:   "login",
-	Short: "Login host to do something",
+	Aliases: []string{"select"},
+	Use:     "login",
+	Short:   "Login host to do something",
 	Long: `
 eg. : gosail login -h <hostfile> [-u "<username>"] [-p "<password>"] [--prot "<port>"]
 

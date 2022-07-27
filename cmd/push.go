@@ -8,8 +8,9 @@ import (
 )
 
 var pushCmd = &cobra.Command{
-	Use:   "push",
-	Short: "Pull can copy file to hosts concurrently, and create folders that do not exist",
+	Aliases: []string{"upload"},
+	Use:     "push",
+	Short:   "Pull can copy file to hosts concurrently, and create folders that do not exist",
 	Long: `
 destPath default "."
 eg. : gosail login push "<srcPath>" ["<destPath>"]
@@ -18,7 +19,11 @@ eg. : gosail login push --src "<srcPath>" [--dest "<destPath>"]
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 	},
 	PersistentPostRun: func(_ *cobra.Command, _ []string) {
-		push()
+		if scp {
+			push()
+		} else {
+			upload()
+		}
 	},
 	Args: func(_ *cobra.Command, args []string) error {
 		if srcPath == "" && destPath == "" && len(args) < 1 {
@@ -43,10 +48,16 @@ eg. : gosail login push --src "<srcPath>" [--dest "<destPath>"]
 func init() {
 	loginCmd.AddCommand(pushCmd)
 	// copy
-	pushCmd.Flags().StringVarP(&srcPath, "src", "", "", "exec cmdline")
-	pushCmd.Flags().StringVarP(&destPath, "dest", "", "", "exec cmdfile")
+	pushCmd.Flags().StringVarP(&srcPath, "src", "", "", "source path")
+	pushCmd.Flags().StringVarP(&destPath, "dest", "", "", "destination path")
+	pushCmd.Flags().BoolVarP(&scp, "scp", "", false, "push file by scp")
 }
 func push() {
 	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
 	cycle.PushAndShow(clientConfig, &srcPath, &destPath)
+}
+
+func upload() {
+	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	cycle.UploadAndShow(clientConfig, &srcPath, &destPath)
 }

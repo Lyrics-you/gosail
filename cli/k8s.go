@@ -73,3 +73,19 @@ func k8sPull() {
 	sshResults := cycle.K8sPull(clientConfig, kubeConfig, &srcPath, &destPath, &tar)
 	cycle.K8sShowResults(sshResults, kubeConfig, &jsonMode)
 }
+
+func k8sDownload() {
+	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
+	kubeConfig := &model.KubeConfig{
+		SshHosts:  clientConfig.SshHosts,
+		Namespace: namespace,
+		App:       app,
+		Container: container,
+		Label:     label,
+		Shell:     shell,
+		Highlight: highlight,
+		CmdLine:   cmdLine,
+	}
+	sftpResults := cycle.K8sDownload(clientConfig, kubeConfig, &srcPath, &destPath, &tar)
+	cycle.K8sShowResults(sftpResults, kubeConfig, &jsonMode)
+}

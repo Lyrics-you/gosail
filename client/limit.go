@@ -3,7 +3,8 @@ package client
 import (
 	"fmt"
 	"gosail/goscp"
-	ssh "gosail/gossh"
+	"gosail/gosftp"
+	"gosail/gossh"
 	"gosail/logger"
 	"gosail/model"
 	"sync"
@@ -12,7 +13,7 @@ import (
 var log = logger.Logger()
 
 func clinetSSHWitchChan(chLimit chan struct{}, ch chan model.RunResult, host model.SSHHost, clientConfig *model.ClientConfig) error {
-	ssh.Dossh(host.Username, host.Password, host.Host, host.Key, host.CmdList, host.Port,
+	gossh.Dossh(host.Username, host.Password, host.Host, host.Key, host.CmdList, host.Port,
 		clientConfig.TimeLimit, clientConfig.CipherList, clientConfig.KeyExchangeList, host.LinuxMode,
 		ch)
 	<-chLimit
@@ -55,7 +56,7 @@ func LimitShhWithChan(clientConfig *model.ClientConfig) ([]model.RunResult, erro
 }
 
 func clinetSSHWithGroup(chLimit chan struct{}, host model.SSHHost, clientConfig *model.ClientConfig, ch chan model.RunResult, wg *sync.WaitGroup) error {
-	ssh.Dossh(host.Username, host.Password, host.Host, host.Key, host.CmdList, host.Port,
+	gossh.Dossh(host.Username, host.Password, host.Host, host.Key, host.CmdList, host.Port,
 		clientConfig.TimeLimit, clientConfig.CipherList, clientConfig.KeyExchangeList, host.LinuxMode, ch)
 	wg.Done()
 	<-chLimit
@@ -144,4 +145,49 @@ func LimitScpWithGroup(scpConfig *model.SCPConfig, runResults []model.RunResult)
 
 	}
 	return ScpResults, nil
+}
+
+func LimitSftpWithGroup(clientConfig *model.ClientConfig, scpConfig *model.SCPConfig) ([]model.RunResult, error) {
+	var wg sync.WaitGroup
+	chLimit := make(chan struct{}, scpConfig.NumLimit) //control the number of concurrent visits
+	chs := make([]chan model.RunResult, len(scpConfig.SshHosts))
+
+	for i, host := range scpConfig.SshHosts {
+		chs[i] = make(chan model.RunResult, 1)
+
+		err := checkParameterUH(&host)
+		if err != nil {
+			// log.Warnf("%s connect error, %v", host.Host, err)
+			chs[i] <- model.RunResult{
+				Host:     host.Host,
+				Username: host.Username,
+				Success:  false,
+				Result:   fmt.Sprintf("%s connect error, %v\n", host.Host, err),
+			}
+		} else {
+			wg.Add(1)
+			if scpConfig.Method == "PUSH" {
+				// PUSH
+				chLimit <- struct{}{}
+				go gosftp.ClientUpload(chLimit, host, clientConfig, scpConfig.SrcPath[i], scpConfig.DestPath[i], chs[i], &wg)
+			} else {
+				// PULL
+				tagPath := goscp.PathTagHost(scpConfig.DestPath[i], host.Host)
+				chLimit <- struct{}{}
+				go gosftp.ClientDownload(chLimit, host, clientConfig, scpConfig.SrcPath[i], tagPath, chs[i], &wg)
+			}
+		}
+	}
+	wg.Wait()
+
+	SftpResults := []model.RunResult{}
+
+	for _, ch := range chs {
+		res := <-ch
+		if res.Result != "" {
+			SftpResults = append(SftpResults, res)
+		}
+
+	}
+	return SftpResults, nil
 }

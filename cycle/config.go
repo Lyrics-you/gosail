@@ -21,7 +21,6 @@ func GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile
 	clientConfig.NumLimit = numLimit
 	clientConfig.TimeLimit = timeLimit
 	clientConfig.KeyExchangeList = utils.SplitString(keyExchanges)
-	clientConfig.KeyExchangeList = utils.SplitString(keyExchanges)
 	clientConfig.CipherList = utils.SplitString(ciphers)
 	hostList, err := utils.GetHostList(&hostLine, &hostFile, &ipLine, &ipFile)
 	if err != nil {

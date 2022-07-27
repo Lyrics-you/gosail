@@ -11,10 +11,12 @@ var (
 	srcPath  string
 	destPath string
 	tar      bool
+	scp      bool
 )
 var pullCmd = &cobra.Command{
-	Use:   "pull",
-	Short: "Pull can copy file from hosts concurrently, and create folders of host to distinguish",
+	Aliases: []string{"download"},
+	Use:     "pull",
+	Short:   "Pull can copy file from hosts concurrently, and create folders of host to distinguish",
 	Long: `
 destPath default "."
 eg. : gosail login pull "<srcPath>" ["<destPath>"]
@@ -23,7 +25,11 @@ eg. : gosail login pull --src "<srcPath>" [--dest "<destPath>"]
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 	},
 	PersistentPostRun: func(_ *cobra.Command, _ []string) {
-		pull()
+		if scp {
+			pull()
+		} else {
+			download()
+		}
 	},
 	Args: func(_ *cobra.Command, args []string) error {
 		if srcPath == "" && destPath == "" && len(args) < 1 {
@@ -48,11 +54,18 @@ eg. : gosail login pull --src "<srcPath>" [--dest "<destPath>"]
 func init() {
 	loginCmd.AddCommand(pullCmd)
 	// copy
-	pullCmd.Flags().StringVarP(&srcPath, "src", "", "", "exec cmdline")
-	pullCmd.Flags().StringVarP(&destPath, "dest", "", "", "exec cmdfile")
+	pullCmd.Flags().StringVarP(&srcPath, "src", "", "", "source path")
+	pullCmd.Flags().StringVarP(&destPath, "dest", "", "", "destination path")
+	pullCmd.Flags().BoolVarP(&scp, "scp", "", false, "pull file by scp")
 	pullCmd.Flags().BoolVarP(&tar, "tar", "", false, "tar pull's file")
+
 }
 func pull() {
 	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
 	cycle.PullAndShow(clientConfig, &srcPath, &destPath, tar)
+}
+
+func download() {
+	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	cycle.DownloadAndShow(clientConfig, &srcPath, &destPath, tar)
 }

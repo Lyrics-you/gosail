@@ -15,7 +15,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func connect(user, password, host, key string, port int, cipherList, keyExchangeList []string) (*ssh.Client, error) {
+func Connect(user, password, host, key string, port int, cipherList, keyExchangeList []string) (*ssh.Client, error) {
 	var (
 		auth         []ssh.AuthMethod
 		addr         string
@@ -79,7 +79,7 @@ func connect(user, password, host, key string, port int, cipherList, keyExchange
 }
 
 func connectSession(username, password, host, key string, port int, cipherList, keyExchangeList []string) (*ssh.Session, error) {
-	client, err := connect(username, password, host, key, port, cipherList, keyExchangeList)
+	client, err := Connect(username, password, host, key, port, cipherList, keyExchangeList)
 	if err != nil {
 		return nil, err
 	}

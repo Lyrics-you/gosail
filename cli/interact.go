@@ -22,11 +22,14 @@ func interExec() {
 		return
 	}
 	sshResults := cycle.Exec(clientConfig)
-	if !linuxMode {
-		workPath = getPWDPath(sshResults[0].Result, 4)
-	} else {
-		workPath = getPWDPath(sshResults[0].Result, 2)
+	if sshResults[0].Success {
+		if !linuxMode {
+			workPath = getPWDPath(sshResults[0].Result, 4)
+		} else {
+			workPath = getPWDPath(sshResults[0].Result, 2)
+		}
 	}
+
 	interShowExecResult(clientConfig.SshHosts, sshResults, &jsonMode, &linuxMode)
 	if selection {
 		client.LoginHostByID(clientConfig.SshHosts, sshResults, "")
@@ -43,7 +46,7 @@ func interShowExecResult(sshHosts []model.SSHHost, sshResults []model.RunResult,
 		return
 	}
 	for id, sshResult := range sshResults {
-		fmt.Printf("👇===============> %4s@%-15s <===============[%-3d]\n", sshHosts[id].Username, sshResult.Host, id)
+		fmt.Printf("👇===============> %4s@%-15s <===============[%-3d]\n", sshResult.Username, sshResult.Host, id)
 		if sshResult.Success {
 			if !*linuxMode {
 				sshResult.Result = utils.SimpleLine(sshResult.Result, len(sshHosts[id].CmdList)+3, 6)
@@ -91,7 +94,9 @@ func interK8sExec() {
 		CmdLine:   cmdLine,
 	}
 	sshResults := cycle.K8sExec(clientConfig, kubeConfig)
-	workPath = getPWDPath(sshResults[0].Result, 2)
+	if sshResults[0].Success {
+		workPath = getPWDPath(sshResults[0].Result, 2)
+	}
 	kubeConfig.CmdLine = before
 	interK8sShowResults(sshResults, kubeConfig, &jsonMode)
 	if selection {
@@ -110,11 +115,13 @@ func interK8sShowResults(sshResults []model.RunResult, kubeConfig *model.KubeCon
 	}
 	for id, sshResult := range sshResults {
 		sshResults[id].Host = kubeConfig.PodsList[id]
-		fmt.Printf("👇===============> %-15s (%s) <===============[%-3d]\n", sshResults[id].Host, kubeConfig.Container, id)
+		fmt.Printf("👇===============> %-15s (%s) <===============[%-3d]\n", sshResult.Host, kubeConfig.Container, id)
 		if kubeConfig.CmdLine != "" {
 			fmt.Printf("👉 ------------> %s \n", kubeConfig.CmdLine)
 		}
-		sshResult.Result = splitLastLine(sshResult.Result)
+		if sshResult.Success {
+			sshResult.Result = splitLastLine(sshResult.Result)
+		}
 		fmt.Println(sshResult.Result)
 	}
 }

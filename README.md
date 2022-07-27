@@ -16,8 +16,9 @@ gosail 是一个免费开源的批处理并发命令执行系统，旨在在多�
 - 输入参数
 - 输出格式
 - 颜色支持
-- 输出适应窗口大小
+- 适应窗口大小
 - 支持交互终端
+- 记录命令历史
 
 ## 使用
 
@@ -89,7 +90,7 @@ Email         : Leyuan.Jia@Outlook.com
 
 <img src=".\gosail-color.png" alt="gosail-color" style="zoom: 50%;" />
 
-### login
+### login/select
 
 `gosail login --help`
 
@@ -106,27 +107,29 @@ If specified the K arg or has default id_rsa.pub key, can omit p arg
 eg. : gosail login -h <hostfile>
 
 Usage:
-  gosail login [flags]
+  gosail login [flags]  
   gosail login [command]
+
+Aliases:
+  login, select
 
 Available Commands:
   exec        Exec can execute commands concurrently and in batches on all hosts
   k8s         K8s master to do something
   pull        Pull can copy file from hosts concurrently, and create folders of host to distinguish
-  push        Pull can copy file to hosts concurrently, and create folders that do not exist       
+  push        Pull can copy file to hosts concurrently, and create folders that do not exist
 
 Flags:
+      --host string       hostline
   -h, --hostfile string   hostfile
-      --hostline string   hostline
+      --ip string         ipline
   -i, --ipfile string     ipfile
-      --ipline string     ipline
   -p, --password string   host password
       --port int          ssh port (default 22)
   -u, --username string   host username
 
 Global Flags:
       --ciphers string        ssh ciphers
-      --config string         config
   -?, --help                  help for this command
   -K, --key string            id_rsa.pub key filepath
       --keyexchanges string   ssh keyexchanges
@@ -144,7 +147,7 @@ IP指定时，需要加上共同用户名，通过-u指定，
 
 支持user@hosts方式，IP地址前可以加上username（root@192.168.245.131)，可以省略-u参数。
 
-#### --hostline 指定主机地址
+#### --host 指定主机地址
 
 #### --hostfile 指定主机地址文件
 
@@ -158,7 +161,7 @@ IP指定时，需要加上共同用户名，通过-u指定，
 
 如果输入的是 IP ，那么允许IP地址段方式的输入，例如 192.168.245.131-192.168.245.133。 
 
-#### --ipline 指定主机IP段
+#### --ip 指定主机IP段
 
 允许IP地址段方式的输入，
 
@@ -197,9 +200,9 @@ Global Flags:
       --config string         config
   -?, --help                  help for this command
   -h, --hostfile string       hostfile
-      --hostline string       hostline
+      --host string       	  hostline
   -i, --ipfile string         ipfile
-      --ipline string         ipline
+      --ip string             ipline
   -K, --key string            id_rsa.pub key filepath
       --keyexchanges string   ssh keyexchanges
   -N, --numlimit int          max execute number (default 20)
@@ -255,9 +258,13 @@ Global Flags:
 Use "gosail login exec [command] --help" for more information about a command.
 ```
 
-#### --cmdline 指定命令行
+#### -e/--cmdline 指定命令行
 
 可以通过;分隔多个命令
+
+#### -b:高亮
+
+只有在cmdline和linuxmode中才其作用，可以实现高亮
 
 #### --cmdfile 指定命令行文件
 
@@ -283,10 +290,6 @@ do
     echo $(date +"%Y-%m-%d %H:%M:%S")
 done
 ```
-
-#### -b:高亮
-
-只有在cmdline和linuxmode中才其作用，可以实现高亮
 
 #### k8s
 
@@ -316,9 +319,9 @@ Global Flags:
       --config string         config
   -?, --help                  help for this command
   -h, --hostfile string       hostfile
-      --hostline string       hostline
+      --host     string       hostline
   -i, --ipfile string         ipfile
-      --ipline string         ipline
+      --ip     string         ipline
   -K, --key string            id_rsa.pub key filepath        
       --keyexchanges string   ssh keyexchanges
   -N, --numlimit int          max execute number (default 20)
@@ -351,32 +354,53 @@ Enter the 0~2 to select the host, other input will exit!
 Input id :
 ```
 
-### pull 
+### pull/download
 
 k8s pull 相同
 
-pull时，可添加`-tar`参数将远端的文件压缩后，进行拉取。
+pull时，可添加`--tar`参数将远端的文件压缩后，进行拉取。
 
 从主机批量并发拉取文件到本地，本地文件支持相对路径以及其他主机目录（username@host:/path)，文件下每个主机的文件以各自主机名作为区分。
 
+默认使用sftp方式进行传输
+
 ```shell
-👇===============> nginx-ingress-controller-5bb8fb4bb6-2ndh7 (nginx-ingress-controller) <===============[0  ]
-/usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-2ndh7 ./demo/192.168.245.133/ Done!
+👇===============> mergemultx1-86986bdd8-nhhpf (mergemultx) <===============[0  ]
+mergemultx1-86986bdd8-nhhpf/config/Limbopro.conf -> mergemultx/192.168.245.133/mergemultx1-86986bdd8-nhhpf/config/Limbopro.conf  
+mergemultx1-86986bdd8-nhhpf/config/Orz-3.conf -> mergemultx/192.168.245.133/mergemultx1-86986bdd8-nhhpf/config/Orz-3.conf        
+mergemultx1-86986bdd8-nhhpf/config/Sabrina.conf -> mergemultx/192.168.245.133/mergemultx1-86986bdd8-nhhpf/config/Sabrina.conf    
+mergemultx1-86986bdd8-nhhpf/config/Yatta.conf -> mergemultx/192.168.245.133/mergemultx1-86986bdd8-nhhpf/config/Yatta.conf        
+mergemultx1-86986bdd8-nhhpf/config/YuanMultx.conf -> mergemultx/192.168.245.133/mergemultx1-86986bdd8-nhhpf/config/YuanMultx.conf
+mergemultx1-86986bdd8-nhhpf/config -> mergemultx/192.168.245.133/mergemultx1-86986bdd8-nhhpf/config
+mergemultx1-86986bdd8-nhhpf -> mergemultx/192.168.245.133/mergemultx1-86986bdd8-nhhpf
 
-👇===============> nginx-ingress-controller-5bb8fb4bb6-rgm4w (nginx-ingress-controller) <===============[1  ]
-/usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-rgm4w ./demo/192.168.245.133/ Done!
-
-👇===============> nginx-ingress-controller-5bb8fb4bb6-twmzv (nginx-ingress-controller) <===============[2  ]
-/usr/bin/scp -r root@192.168.245.133:nginx-ingress-controller-5bb8fb4bb6-twmzv ./demo/192.168.245.133/ Done!
-
-👌Finshed!
+👇===============> mergemultx1-86986bdd8-r8zmv (mergemultx) <===============[1  ]
+mergemultx1-86986bdd8-r8zmv/config/Limbopro.conf -> mergemultx/192.168.245.133/mergemultx1-86986bdd8-r8zmv/config/Limbopro.conf  
+mergemultx1-86986bdd8-r8zmv/config/Orz-3.conf -> mergemultx/192.168.245.133/mergemultx1-86986bdd8-r8zmv/config/Orz-3.conf        
+mergemultx1-86986bdd8-r8zmv/config/Sabrina.conf -> mergemultx/192.168.245.133/mergemultx1-86986bdd8-r8zmv/config/Sabrina.conf    
+mergemultx1-86986bdd8-r8zmv/config/Yatta.conf -> mergemultx/192.168.245.133/mergemultx1-86986bdd8-r8zmv/config/Yatta.conf
+mergemultx1-86986bdd8-r8zmv/config/YuanMultx.conf -> mergemultx/192.168.245.133/mergemultx1-86986bdd8-r8zmv/config/YuanMultx.conf
+mergemultx1-86986bdd8-r8zmv/config -> mergemultx/192.168.245.133/mergemultx1-86986bdd8-r8zmv/config
+mergemultx1-86986bdd8-r8zmv -> mergemultx/192.168.245.133/mergemultx1-86986bdd8-r8zmv
 ```
 
-### push
+`--scp` ：底层使用scp方式进行传输（需要机器进行免密）
+
+```shell
+👇===============> mergemultx1-86986bdd8-nhhpf (mergemultx) <===============[0  ]
+C:\WINDOWS\System32\OpenSSH\scp.exe -r root@192.168.245.133:mergemultx1-86986bdd8-nhhpf ./mergemultx/192.168.245.133/ Done!
+
+👇===============> mergemultx1-86986bdd8-r8zmv (mergemultx) <===============[1  ]
+C:\WINDOWS\System32\OpenSSH\scp.exe -r root@192.168.245.133:mergemultx1-86986bdd8-r8zmv ./mergemultx/192.168.245.133/ Done!
+```
+
+### push/upload
 
 k8s没有该命令
 
 从本地批量并发推送文件到主机，本地文件支持相对路径以及其他主机目录（username@host:/path)
+
+`--scp` ：底层使用scp方式进行传输（需要机器进行免密）
 
 ```shell
 .
@@ -494,22 +518,23 @@ You can also copy(pull or push) files by it.
 
 Commands:
 =========
-  clear          clear the screen
-  exec           Exec can execute commands concurrently and in batches on all hosts and k8s pods
-  exit           exit the shell
-  help           use 'help [command]' for command help
-  login, select  Login host to do something
-  mode           Mode offers choices of exec output formats
-  pull           Pull can copy file from hosts or pods, and create folders to distinguish
-  push           Pull can copy file to hosts concurrently, and create folders that do not exist
-  set            Set the gosail config
-  show           Show the hosts
+  clear           clear the screen
+  color           Color for prompt
+  exec            Exec can execute commands concurrently and in batches on all hosts and k8s pods, no args to exec mode
+  exit            exit the shell
+  help            use 'help [command]' for command help
+  login, select   Login host to do something
+  mode            Mode offers choices of exec output formats
+  pull, download  Pull can copy file from hosts or pods, and create folders to distinguish
+  push, upload    Pull can copy file to hosts concurrently, and create folders that do not exist
+  set             Set the gosail config
+  show            Show the hosts
 
 Sub Commands:
 =============
 
 login:
-  k8s  K8s master to do something
+  k8s  K8s master to do something, need login first
 ```
 
 通过`gosail`或者`gosail --hostfile "<hostfile>" [-u "<username>"] [-p "<password">]`进入交互界面

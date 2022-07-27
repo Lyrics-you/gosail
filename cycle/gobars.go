@@ -27,6 +27,27 @@ func K8sExec(clientConfig *model.ClientConfig, kubeConfig *model.KubeConfig) []m
 	return sshResults
 }
 
+func K8sShowResults(sshResults []model.RunResult, kubeConfig *model.KubeConfig, jsonMode *bool) {
+	if *jsonMode {
+		jsonResult, err := json.Marshal(sshResults)
+		if err != nil {
+			log.Errorf("json Marshal error, %v", err)
+		}
+		fmt.Println(string(jsonResult))
+		return
+	}
+	for id, sshResult := range sshResults {
+		sshResults[id].Host = kubeConfig.PodsList[id]
+		fmt.Printf("👇===============> %-15s (%s) <===============[%-3d]\n", sshResults[id].Host, kubeConfig.Container, id)
+		if kubeConfig.CmdLine != "" {
+			fmt.Printf("👉 ------------> %s \n", kubeConfig.CmdLine)
+		}
+		fmt.Println(sshResult.Result)
+
+	}
+	fmt.Println("👌Finshed!")
+}
+
 func K8sPull(clientConfig *model.ClientConfig, kubeConfig *model.KubeConfig, srcPath, destPath *string, tar *bool) []model.RunResult {
 	if *destPath == "" {
 		*destPath = "./"
@@ -74,23 +95,49 @@ func K8sPull(clientConfig *model.ClientConfig, kubeConfig *model.KubeConfig, src
 	return sshResults
 }
 
-func K8sShowResults(sshResults []model.RunResult, kubeConfig *model.KubeConfig, jsonMode *bool) {
-	if *jsonMode {
-		jsonResult, err := json.Marshal(sshResults)
-		if err != nil {
-			log.Errorf("json Marshal error, %v", err)
-		}
-		fmt.Println(string(jsonResult))
-		return
+func K8sDownload(clientConfig *model.ClientConfig, kubeConfig *model.KubeConfig, srcPath, destPath *string, tar *bool) []model.RunResult {
+	if *destPath == "" {
+		*destPath = "./"
 	}
-	for id, sshResult := range sshResults {
-		sshResults[id].Host = kubeConfig.PodsList[id]
-		fmt.Printf("👇===============> %-15s (%s) <===============[%-3d]\n", sshResults[id].Host, kubeConfig.Container, id)
-		if kubeConfig.CmdLine != "" {
-			fmt.Printf("👉 ------------> %s \n", kubeConfig.CmdLine)
-		}
-		fmt.Println(sshResult.Result)
+	kubePods := getKubePods(clientConfig, kubeConfig)
+	kubeHosts := gokube.MakeMultiCopySshHosts(kubePods, kubeConfig.SshHosts, *srcPath, "./")
+	clientConfig.SshHosts = kubeHosts
+	client.LimitShhWithGroup(clientConfig)
 
+	scpConfig := model.SCPConfig{
+		SshHosts:  kubeHosts,
+		TimeLimit: clientConfig.TimeLimit,
+		NumLimit:  clientConfig.NumLimit,
+		Method:    "PULL",
 	}
-	fmt.Println("👌Finshed!")
+
+	var srcList, destList []string
+	for i := 0; i < len(kubeHosts); i++ {
+		srcList = append(srcList, kubeConfig.PodsList[i])
+		destList = append(destList, *destPath)
+	}
+	scpConfig.SrcPath = srcList
+	scpConfig.DestPath = destList
+
+	// tar file
+	if *tar {
+		goscp.SecureCopyPullTarFile(&scpConfig)
+		client.LimitShhWithGroup(clientConfig)
+	}
+	//copy
+	var sftpResults []model.RunResult
+
+	sftpResults, _ = client.LimitSftpWithGroup(clientConfig, &scpConfig)
+
+	// delete tar file
+	if *tar {
+		goscp.SecureCopyPullDelFile(&scpConfig)
+		client.LimitShhWithGroup(clientConfig)
+	}
+
+	// delete k8s master's file
+	delHosts := gokube.MakeMultiDeleteSshHosts(kubePods, clientConfig.SshHosts, "./")
+	clientConfig.SshHosts = delHosts
+	client.LimitShhWithGroup(clientConfig)
+	return sftpResults
 }

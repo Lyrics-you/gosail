@@ -25,6 +25,7 @@ var (
 	file         = "(none)"
 	prompt       = "gosail » "
 	promptColor  = color.New(color.FgWhite, color.Bold)
+	whoami       string
 	loginCommand *grumble.Command
 	clientConfig *model.ClientConfig = &model.ClientConfig{}
 )
@@ -34,7 +35,7 @@ var Gosail = grumble.New(&grumble.Config{
 gosail is a free and open source batch and concurrent command execution system,
 designed to execute commands on multiple servers or k8s pods and get results with speed and efficiency.
 You can also copy(pull or push) files by it.`,
-	HistoryFile:           "/tmp/gosail.journal",
+	// HistoryFile:           "/tmp/gosail.journal",
 	Prompt:                prompt,
 	PromptColor:           promptColor,
 	HelpHeadlineColor:     promptColor,
@@ -55,6 +56,9 @@ You can also copy(pull or push) files by it.`,
 })
 
 func init() {
+	whoami, _ = utils.PresentUser()
+	whoami = utils.GetPathLastName(whoami)
+	Gosail.Config().HistoryFile = fmt.Sprintf("/tmp/%s_gosail.journal", whoami)
 	version := model.Historys[len(model.Historys)-1]
 	Gosail.SetPrintASCIILogo(func(a *grumble.App) {
 		a.Println(model.LOGO)

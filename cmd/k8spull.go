@@ -20,7 +20,11 @@ eg. : gosail k8s pull --src "<srcPath>" [--dest "<destPath>"]
 
 	},
 	PersistentPostRun: func(_ *cobra.Command, _ []string) {
-		k8sPull()
+		if scp {
+			k8sPull()
+		} else {
+			k8sDownload()
+		}
 	},
 	Args: func(_ *cobra.Command, args []string) error {
 		if srcPath == "" && destPath == "" && len(args) < 1 {
@@ -45,8 +49,9 @@ eg. : gosail k8s pull --src "<srcPath>" [--dest "<destPath>"]
 func init() {
 	k8sCmd.AddCommand(k8spullCmd)
 	// copy
-	k8spullCmd.Flags().StringVarP(&srcPath, "src", "", "", "exec cmdline")
-	k8spullCmd.Flags().StringVarP(&destPath, "dest", "", "", "exec cmdfile")
+	k8spullCmd.Flags().StringVarP(&srcPath, "src", "", "", "source path")
+	k8spullCmd.Flags().StringVarP(&destPath, "dest", "", "", "destination path")
+	k8spullCmd.Flags().BoolVarP(&scp, "scp", "", false, "pull file by exec scp")
 	k8spullCmd.Flags().BoolVarP(&tar, "tar", "", false, "tar pull's file")
 }
 
@@ -74,4 +79,30 @@ func k8sPull() {
 	}
 	sshResults := cycle.K8sPull(clientConfig, kubeConfig, &srcPath, &destPath, &tar)
 	cycle.K8sShowResults(sshResults, kubeConfig, &jsonMode)
+}
+
+func k8sDownload() {
+	if container == "" {
+		container = app
+	}
+	if app == "" {
+		app = container
+	}
+	if container == "" && app == "" && label == "" {
+		log.Errorf("container or app name is not specified")
+		return
+	}
+	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
+	kubeConfig := &model.KubeConfig{
+		SshHosts:  clientConfig.SshHosts,
+		Namespace: namespace,
+		App:       app,
+		Container: container,
+		Label:     label,
+		Shell:     shell,
+		Highlight: highlight,
+		CmdLine:   cmdLine,
+	}
+	sftpResults := cycle.K8sDownload(clientConfig, kubeConfig, &srcPath, &destPath, &tar)
+	cycle.K8sShowResults(sftpResults, kubeConfig, &jsonMode)
 }
