@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"gosail/cycle"
+	"gosail/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -61,11 +62,19 @@ func init() {
 
 }
 func pull() {
-	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	clientConfig, err := cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	if err != nil && err != utils.ErrCmdListEmpty {
+		log.Error(err)
+		return
+	}
 	cycle.PullAndShow(clientConfig, &srcPath, &destPath, tar)
 }
 
 func download() {
-	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	clientConfig, err := cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	if err != nil && err != utils.ErrCmdListEmpty {
+		log.Error(err)
+		return
+	}
 	cycle.DownloadAndShow(clientConfig, &srcPath, &destPath, tar)
 }

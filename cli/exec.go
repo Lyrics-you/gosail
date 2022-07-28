@@ -51,8 +51,8 @@ func init() {
 
 func setExecArgs(c *grumble.Context) {
 	workPath = "~"
-	cmdLine = GetValue(c, "cmdline", "").(string)
-	highlight = GetValue(c, "highlight", "").(string)
+	cmdLine = getValue(c, "cmdline", "").(string)
+	highlight = getValue(c, "highlight", "").(string)
 }
 
 func readCommand() error {

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"gosail/cycle"
 	"gosail/model"
+	"gosail/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -92,7 +93,11 @@ func k8sDownload() {
 		log.Errorf("container or app name is not specified")
 		return
 	}
-	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
+	clientConfig, err := cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, true)
+	if err != nil && err != utils.ErrCmdListEmpty {
+		log.Error(err)
+		return
+	}
 	kubeConfig := &model.KubeConfig{
 		SshHosts:  clientConfig.SshHosts,
 		Namespace: namespace,

@@ -20,7 +20,7 @@ func SecureCopyPushMakeDir(scpConfig *model.SCPConfig) {
 	for i := range scpConfig.SshHosts {
 		scpConfig.SshHosts[i].LinuxMode = true
 		scpConfig.SshHosts[i].CmdList = []string{
-			MakePushDestFileLine(scpConfig.DestPath[i]),
+			makePushDestFileLine(scpConfig.DestPath[i]),
 			fmt.Sprintf("cd %s && pwd", scpConfig.DestPath[i]),
 		}
 	}
@@ -34,7 +34,7 @@ func PathTagHost(destPath, host string) string {
 	return tagPath
 }
 
-func MakeTagDirRun(chLimit chan struct{}, destPath, host string, ch chan model.RunResult, wg *sync.WaitGroup) {
+func makeTagDirRun(chLimit chan struct{}, destPath, host string, ch chan model.RunResult, wg *sync.WaitGroup) {
 	tagPath := PathTagHost(destPath, host)
 	err := os.MkdirAll(tagPath, 0777)
 
@@ -62,7 +62,7 @@ func SecureCopyPullMakeDir(scpConfig *model.SCPConfig) []model.RunResult {
 		wg.Add(1)
 		chs[i] = make(chan model.RunResult, 1)
 		chLimit <- struct{}{}
-		go MakeTagDirRun(chLimit, scpConfig.DestPath[i], sshHosts.Host, chs[i], &wg)
+		go makeTagDirRun(chLimit, scpConfig.DestPath[i], sshHosts.Host, chs[i], &wg)
 	}
 	wg.Wait()
 
@@ -82,7 +82,7 @@ func SecureCopyPullTarFile(scpConfig *model.SCPConfig) {
 	for i := range scpConfig.SshHosts {
 		scpConfig.SshHosts[i].LinuxMode = true
 		scpConfig.SshHosts[i].CmdList = []string{
-			TarPullDestFileLine(scpConfig.SrcPath[i]),
+			tarPullDestFileLine(scpConfig.SrcPath[i]),
 		}
 		scpConfig.SrcPath[i] += ".tar"
 	}
@@ -92,13 +92,13 @@ func SecureCopyPullDelFile(scpConfig *model.SCPConfig) {
 	for i := range scpConfig.SshHosts {
 		scpConfig.SshHosts[i].LinuxMode = true
 		scpConfig.SshHosts[i].CmdList = []string{
-			DelPullDestFileLine(scpConfig.SrcPath[i]),
+			delPullDestFileLine(scpConfig.SrcPath[i]),
 		}
 		scpConfig.SrcPath[i] += ".tar"
 	}
 }
 
-func PushFileCmd(srcPath, username, destHost, destPath string) *exec.Cmd {
+func pushFileCmd(srcPath, username, destHost, destPath string) *exec.Cmd {
 	// destHost : xxx.xxx.xxx.xxx
 	// scp -r srcPath username@destHost:destPath
 	var copyFileCmd *exec.Cmd
@@ -119,7 +119,7 @@ func PushFileCmd(srcPath, username, destHost, destPath string) *exec.Cmd {
 	return copyFileCmd
 }
 
-func PullFileCmd(username, srcHost, srcPath, destPath string) *exec.Cmd {
+func pullFileCmd(username, srcHost, srcPath, destPath string) *exec.Cmd {
 	// srcHost : xxx.xxx.xxx.xxx
 	// tagPath : destPath/host/
 	// scp -r username@srcHost:srcPath tagPath
@@ -140,26 +140,26 @@ func PullFileCmd(username, srcHost, srcPath, destPath string) *exec.Cmd {
 	return copyFileCmd
 }
 
-func MakePushDestFileLine(destPath string) string {
+func makePushDestFileLine(destPath string) string {
 	// "mkdir -p tagPath"
 	mkdirLine := fmt.Sprintf("mkdir -p %s", destPath)
 	return mkdirLine
 }
 
-func TarPullDestFileLine(destPath string) string {
+func tarPullDestFileLine(destPath string) string {
 	// "tar -zcvf "destPath.tar" "destPath"
 	tarLine := fmt.Sprintf("tar -zcvf %s.tar %s", destPath, destPath)
 	return tarLine
 }
 
-func DelPullDestFileLine(destPath string) string {
+func delPullDestFileLine(destPath string) string {
 	// "rm -rf destPath"
 	delLine := fmt.Sprintf("rm -rf %s", destPath)
 	return delLine
 }
 
 func SecureCopyPushRun(chLimit chan struct{}, srcPath, username, destHost, destPath string, ch chan model.RunResult, wg *sync.WaitGroup) {
-	scpCmd := PushFileCmd(srcPath, username, destHost, destPath)
+	scpCmd := pushFileCmd(srcPath, username, destHost, destPath)
 	out, err := scpCmd.CombinedOutput()
 	if err != nil {
 		ch <- model.RunResult{
@@ -181,7 +181,7 @@ func SecureCopyPushRun(chLimit chan struct{}, srcPath, username, destHost, destP
 }
 
 func SecureCopyPullRun(chLimit chan struct{}, username, srcHost, srcPath, destPath string, ch chan model.RunResult, wg *sync.WaitGroup) {
-	scpCmd := PullFileCmd(username, srcHost, srcPath, destPath)
+	scpCmd := pullFileCmd(username, srcHost, srcPath, destPath)
 	out, err := scpCmd.CombinedOutput()
 	if err != nil {
 		ch <- model.RunResult{

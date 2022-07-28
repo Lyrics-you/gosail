@@ -2,6 +2,7 @@ package cli
 
 import (
 	"gosail/cycle"
+	"gosail/utils"
 
 	"github.com/desertbit/grumble"
 )
@@ -34,17 +35,25 @@ func init() {
 }
 
 func setPushArgs(c *grumble.Context) {
-	srcPath = GetValue(c, "src", "").(string)
-	destPath = GetValue(c, "dest", ".").(string)
+	srcPath = getValue(c, "src", "").(string)
+	destPath = getValue(c, "dest", ".").(string)
 	scp = c.Flags.Bool("scp")
 }
 
 func push() {
-	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	clientConfig, err = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	if err != nil && err != utils.ErrCmdListEmpty {
+		log.Error(err)
+		return
+	}
 	cycle.PushAndShow(clientConfig, &srcPath, &destPath)
 }
 
 func upload() {
-	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	clientConfig, err = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, "", hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	if err != nil && err != utils.ErrCmdListEmpty {
+		log.Error(err)
+		return
+	}
 	cycle.UploadAndShow(clientConfig, &srcPath, &destPath)
 }

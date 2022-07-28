@@ -25,7 +25,7 @@ func NewClient(sshClient *ssh.Client) (*sftp.Client, error) {
 	return sftpClient, nil
 }
 
-func UploadFile(sftpClient *sftp.Client, localFilePath string, remotePath string, buffer *bytes.Buffer) error {
+func uploadFile(sftpClient *sftp.Client, localFilePath string, remotePath string, buffer *bytes.Buffer) error {
 	srcFile, err := os.Open(localFilePath)
 	if err != nil {
 		return fmt.Errorf("os.Open error, %s", err)
@@ -59,7 +59,7 @@ func UploadFile(sftpClient *sftp.Client, localFilePath string, remotePath string
 	return nil
 }
 
-func UploadDirectory(sftpClient *sftp.Client, localPath string, remotePath string, buffer *bytes.Buffer) error {
+func uploadDirectory(sftpClient *sftp.Client, localPath string, remotePath string, buffer *bytes.Buffer) error {
 	localFiles, err := ioutil.ReadDir(localPath)
 	if err != nil {
 		return fmt.Errorf("readDir error, %s", err)
@@ -74,12 +74,12 @@ func UploadDirectory(sftpClient *sftp.Client, localPath string, remotePath strin
 			if err != nil {
 				return fmt.Errorf("sftpClient.Mkdir error, %s", err)
 			}
-			err := UploadDirectory(sftpClient, localFilePath, remoteFilePath, buffer)
+			err := uploadDirectory(sftpClient, localFilePath, remoteFilePath, buffer)
 			if err != nil {
 				return fmt.Errorf("sftpClient.UploadDirectory error, %s", err)
 			}
 		} else {
-			UploadFile(sftpClient, path.Join(localPath, backupDir.Name()), remotePath, buffer)
+			uploadFile(sftpClient, path.Join(localPath, backupDir.Name()), remotePath, buffer)
 		}
 	}
 	buffer.WriteString(localPath)
@@ -89,7 +89,7 @@ func UploadDirectory(sftpClient *sftp.Client, localPath string, remotePath strin
 	return nil
 }
 
-func Upload(sftpClient *sftp.Client, localPath string, remotePath string) (string, error) {
+func upload(sftpClient *sftp.Client, localPath string, remotePath string) (string, error) {
 	local, err := os.Stat(localPath)
 	if err != nil {
 		return "", fmt.Errorf("os.Stat error, %s", err)
@@ -98,12 +98,12 @@ func Upload(sftpClient *sftp.Client, localPath string, remotePath string) (strin
 	if local.IsDir() {
 		var remoteDirName = utils.GetPathLastName(localPath)
 		remotePath = path.Join(remotePath, remoteDirName)
-		err = UploadDirectory(sftpClient, localPath, remotePath, &buffer)
+		err = uploadDirectory(sftpClient, localPath, remotePath, &buffer)
 		if err != nil {
 			return buffer.String(), err
 		}
 	} else {
-		err = UploadFile(sftpClient, localPath, remotePath, &buffer)
+		err = uploadFile(sftpClient, localPath, remotePath, &buffer)
 		if err != nil {
 			return buffer.String(), err
 		}
@@ -111,7 +111,7 @@ func Upload(sftpClient *sftp.Client, localPath string, remotePath string) (strin
 	return buffer.String(), err
 }
 
-func DownloadFile(sftpClient *sftp.Client, remotePath string, localFilePath string, buffer *bytes.Buffer) error {
+func downloadFile(sftpClient *sftp.Client, remotePath string, localFilePath string, buffer *bytes.Buffer) error {
 	srcFile, err := sftpClient.Open(remotePath)
 	if err != nil {
 		return fmt.Errorf("sftpClient.Open error, %s", err)
@@ -145,7 +145,7 @@ func DownloadFile(sftpClient *sftp.Client, remotePath string, localFilePath stri
 	return nil
 }
 
-func DownloadDirectory(sftpClient *sftp.Client, remotePath string, localPath string, buffer *bytes.Buffer) error {
+func downloadDirectory(sftpClient *sftp.Client, remotePath string, localPath string, buffer *bytes.Buffer) error {
 	remoteFiles, err := sftpClient.ReadDir(remotePath)
 	if err != nil {
 		return fmt.Errorf("sftpClient.ReadDir error, %s", err)
@@ -160,9 +160,9 @@ func DownloadDirectory(sftpClient *sftp.Client, remotePath string, localPath str
 		remoteFilePath := path.Join(remotePath, backupDir.Name())
 		if backupDir.IsDir() {
 			sftpClient.Mkdir(localFilePath)
-			DownloadDirectory(sftpClient, remoteFilePath, localFilePath, buffer)
+			downloadDirectory(sftpClient, remoteFilePath, localFilePath, buffer)
 		} else {
-			DownloadFile(sftpClient, path.Join(remotePath, backupDir.Name()), localPath, buffer)
+			downloadFile(sftpClient, path.Join(remotePath, backupDir.Name()), localPath, buffer)
 		}
 	}
 	buffer.WriteString(remotePath)
@@ -172,7 +172,7 @@ func DownloadDirectory(sftpClient *sftp.Client, remotePath string, localPath str
 	return nil
 }
 
-func Download(sftpClient *sftp.Client, remotePath string, localPath string) (string, error) {
+func download(sftpClient *sftp.Client, remotePath string, localPath string) (string, error) {
 	remote, err := sftpClient.Stat(remotePath)
 	if err != nil {
 		return "", fmt.Errorf("sftpClient.Stat error, '%s' %s", remotePath, err)
@@ -181,12 +181,12 @@ func Download(sftpClient *sftp.Client, remotePath string, localPath string) (str
 	if remote.IsDir() {
 		var localDirName = utils.GetPathLastName(remotePath)
 		localPath = path.Join(localPath, localDirName)
-		err = DownloadDirectory(sftpClient, remotePath, localPath, &buffer)
+		err = downloadDirectory(sftpClient, remotePath, localPath, &buffer)
 		if err != nil {
 			return buffer.String(), err
 		}
 	} else {
-		err = DownloadFile(sftpClient, remotePath, localPath, &buffer)
+		err = downloadFile(sftpClient, remotePath, localPath, &buffer)
 		if err != nil {
 			return buffer.String(), err
 		}
@@ -218,7 +218,7 @@ func ClientUpload(chLimit chan struct{}, host model.SSHHost, clientConfig *model
 	}
 	defer sftpClient.Close()
 
-	result, err := Upload(sftpClient, srcPath, destPath)
+	result, err := upload(sftpClient, srcPath, destPath)
 	if err != nil {
 		sftpResult.Success = false
 		sftpResult.Result = fmt.Sprintf("%s\n", err.Error())
@@ -254,7 +254,7 @@ func ClientDownload(chLimit chan struct{}, host model.SSHHost, clientConfig *mod
 	}
 	defer sftpClient.Close()
 
-	result, err := Download(sftpClient, srcPath, destPath)
+	result, err := download(sftpClient, srcPath, destPath)
 	if err != nil {
 		sftpResult.Success = false
 		sftpResult.Result = fmt.Sprintf("%s\n", err.Error())

@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"gosail/cycle"
+	"gosail/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -53,11 +54,19 @@ func init() {
 	pushCmd.Flags().BoolVarP(&scp, "scp", "", false, "push file by scp")
 }
 func push() {
-	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	clientConfig, err := cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	if err != nil && err != utils.ErrCmdListEmpty {
+		log.Error(err)
+		return
+	}
 	cycle.PushAndShow(clientConfig, &srcPath, &destPath)
 }
 
 func upload() {
-	clientConfig, _ = cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	clientConfig, err := cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)
+	if err != nil && err != utils.ErrCmdListEmpty {
+		log.Error(err)
+		return
+	}
 	cycle.UploadAndShow(clientConfig, &srcPath, &destPath)
 }

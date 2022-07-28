@@ -109,7 +109,7 @@ func Dossh(username, password, host, key string, cmdlist []string, port, timeout
 		res.Host = host
 		res.Username = username
 		res.Success = false
-		res.Result = ("ssh run timeout: " + strconv.Itoa(timeout) + " second.")
+		res.Result = fmt.Sprintf("ssh run timeout: %s second\n", strconv.Itoa(timeout))
 		ch <- res
 	case res = <-chSSH:
 		ch <- res

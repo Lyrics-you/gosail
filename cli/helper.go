@@ -10,7 +10,7 @@ var (
 	log = logger.Logger()
 )
 
-func GetValue(c *grumble.Context, name string, v interface{}) interface{} {
+func getValue(c *grumble.Context, name string, v interface{}) interface{} {
 	var value interface{}
 	switch v.(type) {
 	case string:

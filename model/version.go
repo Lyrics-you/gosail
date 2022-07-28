@@ -143,6 +143,10 @@ var (
 		},
 		{Version: "0.15.0",
 			Description: "pull or push file by sftp, scp needs secret-free",
+		}, {Version: "0.15.1",
+			Description: "fix pull/push make clientConfig not throw non-ErrCmdListEmpty problem",
+		}, {Version: "0.15.2",
+			Description: "change some public functions to private",
 		},
 	}
 )
