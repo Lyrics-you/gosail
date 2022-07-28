@@ -110,7 +110,9 @@ func exec() {
 		log.Error(err)
 		return
 	}
+
 	sshResults := cycle.Exec(clientConfig)
+
 	cycle.ShowExecResult(clientConfig.SshHosts, sshResults, &jsonMode, &linuxMode)
 	if selection {
 		client.LoginHostByID(clientConfig.SshHosts, sshResults, "")

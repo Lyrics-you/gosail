@@ -5,9 +5,12 @@ import (
 	"gosail/client"
 	"gosail/goscp"
 	"gosail/model"
+	"gosail/spinner"
 )
 
 func PullAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string, tar bool) {
+	spinner.Spin.Start()
+
 	scpConfig := &model.SCPConfig{
 		SshHosts:  clientConfig.SshHosts,
 		TimeLimit: clientConfig.TimeLimit,
@@ -31,13 +34,17 @@ func PullAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string, ta
 		goscp.SecureCopyPullTarFile(scpConfig)
 		tarResults, _ = client.LimitShhWithGroup(clientConfig)
 	}
+
 	//copy
 	scpResults, _ = client.LimitScpWithGroup(scpConfig, mkdirResults)
+
 	// delete tar file
 	if tar {
 		goscp.SecureCopyPullDelFile(scpConfig)
 		client.LimitShhWithGroup(clientConfig)
 	}
+
+	spinner.Spin.Stop()
 
 	for id, scpResult := range scpResults {
 		fmt.Printf("👇===============> %4s@%-15s <===============[%-3d]\n", scpResult.Username, "localhost", id)
@@ -54,6 +61,8 @@ func PullAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string, ta
 }
 
 func PushAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string) {
+	spinner.Spin.Start()
+
 	scpConfig := &model.SCPConfig{
 		SshHosts:  clientConfig.SshHosts,
 		TimeLimit: clientConfig.TimeLimit,
@@ -72,8 +81,10 @@ func PushAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string) {
 	goscp.SecureCopyPushMakeDir(scpConfig)
 	// scpConfig'SshHosts is equal clientConfig'SshHosts
 	sshResults, _ := client.LimitShhWithGroup(clientConfig)
-
 	scpResults, _ = client.LimitScpWithGroup(scpConfig, sshResults)
+
+	spinner.Spin.Stop()
+
 	for id, scpResult := range scpResults {
 		fmt.Printf("👇===============> %4s@%-15s <===============[%-3d]\n", scpResult.Username, "localhost", id)
 		if sshResults[id].Success {
@@ -86,6 +97,8 @@ func PushAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string) {
 }
 
 func DownloadAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string, tar bool) {
+	spinner.Spin.Start()
+
 	scpConfig := &model.SCPConfig{
 		SshHosts:  clientConfig.SshHosts,
 		TimeLimit: clientConfig.TimeLimit,
@@ -115,6 +128,8 @@ func DownloadAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string
 		client.LimitShhWithGroup(clientConfig)
 	}
 
+	spinner.Spin.Stop()
+
 	for id, sftpResult := range sftpResults {
 		fmt.Printf("👇===============> %4s@%-15s <===============[%-3d]\n", sftpResult.Username, sftpResult.Host, id)
 		if tar && tarResults[id].Success {
@@ -127,6 +142,8 @@ func DownloadAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string
 }
 
 func UploadAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string) {
+	spinner.Spin.Start()
+
 	scpConfig := &model.SCPConfig{
 		SshHosts:  clientConfig.SshHosts,
 		TimeLimit: clientConfig.TimeLimit,
@@ -145,6 +162,8 @@ func UploadAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string) 
 	goscp.SecureCopyPushMakeDir(scpConfig)
 	// scpConfig'SshHosts is equal clientConfig'SshHosts
 	sftpResults, _ = client.LimitSftpWithGroup(clientConfig, scpConfig)
+
+	spinner.Spin.Stop()
 
 	for id, sftpResult := range sftpResults {
 		fmt.Printf("👇===============> %4s@%-15s <===============[%-3d]\n", sftpResult.Username, sftpResult.Host, id)

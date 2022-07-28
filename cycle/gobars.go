@@ -7,6 +7,7 @@ import (
 	"gosail/gokube"
 	"gosail/goscp"
 	"gosail/model"
+	"gosail/spinner"
 )
 
 func getKubePods(clientConfig *model.ClientConfig, kubeConfig *model.KubeConfig) []model.KubePods {
@@ -17,6 +18,9 @@ func getKubePods(clientConfig *model.ClientConfig, kubeConfig *model.KubeConfig)
 }
 
 func K8sExec(clientConfig *model.ClientConfig, kubeConfig *model.KubeConfig) []model.RunResult {
+	spinner.Spin.Start()
+	defer spinner.Spin.Stop()
+
 	kubePods := getKubePods(clientConfig, kubeConfig)
 	sshResults := []model.RunResult{}
 	if kubeConfig.CmdLine != "" {
@@ -52,6 +56,10 @@ func K8sPull(clientConfig *model.ClientConfig, kubeConfig *model.KubeConfig, src
 	if *destPath == "" {
 		*destPath = "./"
 	}
+
+	spinner.Spin.Start()
+	defer spinner.Spin.Stop()
+
 	kubePods := getKubePods(clientConfig, kubeConfig)
 	kubeHosts := gokube.MakeMultiCopySshHosts(kubePods, kubeConfig.SshHosts, *srcPath, "./")
 	clientConfig.SshHosts = kubeHosts
@@ -99,6 +107,10 @@ func K8sDownload(clientConfig *model.ClientConfig, kubeConfig *model.KubeConfig,
 	if *destPath == "" {
 		*destPath = "./"
 	}
+
+	spinner.Spin.Start()
+	defer spinner.Spin.Stop()
+
 	kubePods := getKubePods(clientConfig, kubeConfig)
 	kubeHosts := gokube.MakeMultiCopySshHosts(kubePods, kubeConfig.SshHosts, *srcPath, "./")
 	clientConfig.SshHosts = kubeHosts

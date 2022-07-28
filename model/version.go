@@ -147,9 +147,15 @@ var (
 			Description: "fix pull/push make clientConfig not throw non-ErrCmdListEmpty problem",
 		}, {Version: "0.15.2",
 			Description: "change some public functions to private",
+		}, {Version: "0.15.3",
+			Description: "fix interact k8s pod name problem",
+		},
+		{Version: "0.16.0",
+			Description: "gosail spinner : >))'>",
 		},
 	}
 )
 
+// furture : progressor bar for watting result
 // furture : autoCompleter for exec mode
 // furture : dynamic display of the command execution process

@@ -5,11 +5,16 @@ import (
 	"fmt"
 	"gosail/client"
 	"gosail/model"
+	"gosail/spinner"
 	"gosail/utils"
 )
 
 func Exec(clientConfig *model.ClientConfig) []model.RunResult {
+	spinner.Spin.Start()
+	defer spinner.Spin.Stop()
+
 	sshResults, _ := client.LimitShhWithGroup(clientConfig)
+
 	return sshResults
 }
 

@@ -29,7 +29,6 @@ func interExec() {
 			workPath = getPWDPath(sshResults[0].Result, 2)
 		}
 	}
-
 	interShowExecResult(clientConfig.SshHosts, sshResults, &jsonMode, &linuxMode)
 	if selection {
 		client.LoginHostByID(clientConfig.SshHosts, sshResults, "")
@@ -98,6 +97,7 @@ func interK8sExec() {
 		workPath = getPWDPath(sshResults[0].Result, 2)
 	}
 	kubeConfig.CmdLine = before
+
 	interK8sShowResults(sshResults, kubeConfig, &jsonMode)
 	if selection {
 		client.LoginPodByID(kubeConfig, clientConfig.SshHosts, sshResults, kubeConfig.Shell)
@@ -115,7 +115,7 @@ func interK8sShowResults(sshResults []model.RunResult, kubeConfig *model.KubeCon
 	}
 	for id, sshResult := range sshResults {
 		sshResults[id].Host = kubeConfig.PodsList[id]
-		fmt.Printf("👇===============> %-15s (%s) <===============[%-3d]\n", sshResult.Host, kubeConfig.Container, id)
+		fmt.Printf("👇===============> %-15s (%s) <===============[%-3d]\n", sshResults[id].Host, kubeConfig.Container, id)
 		if kubeConfig.CmdLine != "" {
 			fmt.Printf("👉 ------------> %s \n", kubeConfig.CmdLine)
 		}

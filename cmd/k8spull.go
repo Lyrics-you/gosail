@@ -10,8 +10,9 @@ import (
 )
 
 var k8spullCmd = &cobra.Command{
-	Use:   "pull",
-	Short: "Pull",
+	Aliases: []string{"download"},
+	Use:     "pull",
+	Short:   "Pull",
 	Long: `
 destPath default "."
 eg. : gosail k8s pull "<srcPath>" ["<destPath>"]

@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/Lyrics-you/sail-logrus-formatter v1.3.1
 	github.com/abiosoft/readline v0.0.0-20180607040430-155bce2042db
+	github.com/briandowns/spinner v1.18.1
 	github.com/desertbit/grumble v1.1.3
 	github.com/fatih/color v1.10.0
 	github.com/nathan-fiscaletti/consolesize-go v0.0.0-20220204101620-317176b6684d
