@@ -1,6 +1,8 @@
 package main
 
-import "gosail/cmd"
+import (
+	"gosail/cmd"
+)
 
 func main() {
 	cmd.Execute()

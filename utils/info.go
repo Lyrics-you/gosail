@@ -106,12 +106,9 @@ func GetPathLastName(path string) string {
 func GetHostList(hostLine, hostFile, ipLine, ipFile *string) ([]string, error) {
 	var hostList []string
 	var err error
-	if *ipFile != "" {
-		hostList, err = GetIpListFromFile(*ipFile)
-		if err != nil {
-			// log.Errorf("load iplist error, %v", err)
-			return []string{}, fmt.Errorf("load iplist error, %v", err)
-		}
+	// hostLine -> hostFile -> ipLine -> ipFile
+	if *hostLine != "" {
+		hostList = SplitString(*hostLine)
 		if len(hostList) == 0 {
 			return []string{}, ErrHostListEmpty
 		}
@@ -142,12 +139,18 @@ func GetHostList(hostLine, hostFile, ipLine, ipFile *string) ([]string, error) {
 		return hostList, nil
 	}
 
-	if *hostLine != "" {
-		hostList = SplitString(*hostLine)
+	if *ipFile != "" {
+		hostList, err = GetIpListFromFile(*ipFile)
+		if err != nil {
+			// log.Errorf("load iplist error, %v", err)
+			return []string{}, fmt.Errorf("load iplist error, %v", err)
+		}
+		if len(hostList) == 0 {
+			return []string{}, ErrHostListEmpty
+		}
+		return hostList, nil
 	}
-	if len(hostList) == 0 {
-		return []string{}, ErrHostListEmpty
-	}
+
 	return hostList, nil
 }
 

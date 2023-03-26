@@ -8,7 +8,12 @@ import (
 	"gosail/spinner"
 )
 
+var (
+	pstyle = spinner.Tips
+)
+
 func PullAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string, tar bool) {
+	spinner.Spin.SetStyle(pstyle)
 	spinner.Spin.Start()
 
 	scpConfig := &model.SCPConfig{
@@ -61,6 +66,7 @@ func PullAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string, ta
 }
 
 func PushAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string) {
+	spinner.Spin.SetStyle(pstyle)
 	spinner.Spin.Start()
 
 	scpConfig := &model.SCPConfig{
@@ -97,6 +103,7 @@ func PushAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string) {
 }
 
 func DownloadAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string, tar bool) {
+	spinner.Spin.SetStyle(pstyle)
 	spinner.Spin.Start()
 
 	scpConfig := &model.SCPConfig{
@@ -142,6 +149,7 @@ func DownloadAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string
 }
 
 func UploadAndShow(clientConfig *model.ClientConfig, srcPath, destPath *string) {
+	spinner.Spin.SetStyle(pstyle)
 	spinner.Spin.Start()
 
 	scpConfig := &model.SCPConfig{

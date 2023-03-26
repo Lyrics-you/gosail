@@ -1,10 +1,13 @@
 package cycle
 
 import (
+	"fmt"
 	"gosail/gossh"
 	"gosail/logger"
 	"gosail/model"
 	"gosail/utils"
+
+	"gopkg.in/ini.v1"
 )
 
 var (
@@ -102,4 +105,45 @@ func MakeClientConfigFromJson(config string) (*model.ClientConfig, error) {
 		NumLimit:        sshHostConfig.Global.NumLimit,
 		TimeLimit:       sshHostConfig.Global.TimeLimit,
 	}, nil
+}
+
+func GetIniConfig() *ini.File {
+	config, err := ini.Load("./gosail.conf")
+	if err != nil {
+		log.Info("can't load gosial configuration from gosail.conf, err:", err)
+		return nil
+	}
+	return config
+}
+
+func getSectionConfig(config *ini.File, section string, v interface{}) interface{} {
+	if _, err := config.SectionsByName(section); err == nil {
+		config.Section(section).MapTo(v)
+	}
+	return v
+}
+
+func GetGosailConfiguration() *model.GosailConfig {
+	// get gosail configuration from ini file
+	config := GetIniConfig()
+	if config == nil {
+		return nil
+	}
+	gosailConfig := &model.GosailConfig{
+		Client: getSectionConfig(config, "client", &model.ClientConfig{}).(*model.ClientConfig),
+		Spin:   getSectionConfig(config, "spin", &model.SpinConfig{}).(*model.SpinConfig),
+		Login:  getSectionConfig(config, "login", &model.LoginConfig{}).(*model.LoginConfig),
+		K8s:    getSectionConfig(config, "k8s", &model.K8sConfig{}).(*model.K8sConfig),
+		Mode:   getSectionConfig(config, "mode", &model.ModeConfig{}).(*model.ModeConfig),
+	}
+	return gosailConfig
+}
+
+func PrintGosailConfiguration() {
+	gosail := GetGosailConfiguration()
+	fmt.Printf("%+v\n", gosail.Client)
+	fmt.Printf("%+v\n", gosail.Spin)
+	fmt.Printf("%+v\n", gosail.Login)
+	fmt.Printf("%+v\n", gosail.K8s)
+	fmt.Printf("%+v\n", gosail.Mode)
 }

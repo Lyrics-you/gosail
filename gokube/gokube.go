@@ -39,12 +39,13 @@ func GetPodsByResult(kubeConfig *model.KubeConfig, sshResults []model.RunResult)
 
 func getPodsLineByGrep(namespace, appname string) string {
 	// offer : lujun
-	line := fmt.Sprintf("kubectl get pods -n %s | awk '{print $1}' | grep -P '^%s(-\\w+){1,2}$'", namespace, appname)
+	line := fmt.Sprintf("kubectl get pods -n %s | grep Running | awk '{print $1}' | grep -P '^%s(-\\w+){1,2}$'", namespace, appname)
 	return line
 }
 
 func getPodsLineByLabel(namespace, label string) string {
-	line := fmt.Sprintf("kubectl get pods -n %s -l %s | awk 'NR!=1 {print $1}'", namespace, label)
+	// line := fmt.Sprintf("kubectl get pods -n %s -l %s | awk 'NR!=1 {print $1}'", namespace, label)
+	line := fmt.Sprintf("kubectl get pods -n %s -l %s | grep Running | awk '{print $1}'", namespace, label)
 	return line
 }
 
@@ -74,6 +75,7 @@ func MakeMultiCopySshHosts(kubePods []model.KubePods, masterHosts []model.SSHHos
 		destPath = "./"
 	}
 	kubeHosts := []model.SSHHost{}
+
 	for id, pod := range kubePods {
 		masterHost := masterHosts[id]
 		for _, name := range pod.PodsName {

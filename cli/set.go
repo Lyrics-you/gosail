@@ -32,4 +32,10 @@ func setSetArgs(c *grumble.Context) {
 	keyExchanges = c.Flags.String("keyexchanges")
 	numLimit = c.Flags.Int("numlimit")
 	timeLimit = c.Flags.Int("timelimit")
+	if gosailConfig.Client.NumLimit != 0 && numLimit == 20 {
+		numLimit = gosailConfig.Client.NumLimit
+	}
+	if gosailConfig.Client.TimeLimit != 0 && timeLimit == 30 {
+		timeLimit = gosailConfig.Client.TimeLimit
+	}
 }

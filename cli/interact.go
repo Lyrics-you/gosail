@@ -21,7 +21,10 @@ func interExec() {
 		log.Error(err)
 		return
 	}
-	sshResults := cycle.Exec(clientConfig)
+
+	spinnerConfig.IsSelect = selection
+
+	sshResults := cycle.Exec(clientConfig, spinnerConfig)
 	if sshResults[0].Success {
 		if !linuxMode {
 			workPath = getPWDPath(sshResults[0].Result, 4)
@@ -30,6 +33,7 @@ func interExec() {
 		}
 	}
 	interShowExecResult(clientConfig.SshHosts, sshResults, &jsonMode, &linuxMode)
+
 	if selection {
 		client.LoginHostByID(clientConfig.SshHosts, sshResults, "")
 	}
@@ -92,7 +96,8 @@ func interK8sExec() {
 		Highlight: highlight,
 		CmdLine:   cmdLine,
 	}
-	sshResults := cycle.K8sExec(clientConfig, kubeConfig)
+	spinnerConfig.IsSelect = selection
+	sshResults := cycle.K8sExec(clientConfig, kubeConfig, spinnerConfig)
 	if sshResults[0].Success {
 		workPath = getPWDPath(sshResults[0].Result, 2)
 	}

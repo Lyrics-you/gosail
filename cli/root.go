@@ -22,12 +22,14 @@ var (
 	password     = cycle.LoginPwd
 )
 var (
-	file         = "(none)"
-	prompt       = "gosail » "
-	promptColor  = color.New(color.FgWhite, color.Bold)
-	whoami       string
-	loginCommand *grumble.Command
-	clientConfig *model.ClientConfig = &model.ClientConfig{}
+	file          = "(none)"
+	prompt        = "gosail » "
+	promptColor   = color.New(color.FgWhite, color.Bold)
+	whoami        string
+	loginCommand  *grumble.Command
+	spinnerConfig *model.SpinConfig   = &model.SpinConfig{}
+	clientConfig  *model.ClientConfig = &model.ClientConfig{}
+	gosailConfig  *model.GosailConfig = &model.GosailConfig{}
 )
 var Gosail = grumble.New(&grumble.Config{
 	Name: "gosail",
@@ -87,4 +89,39 @@ func setInitArgs() {
 	hostFile = cycle.LoginHost
 	username = cycle.LoginUser
 	password = cycle.LoginPwd
+	gosailConfig = cycle.GetGosailConfiguration()
+	// gConfig.PrintGosailConfiguration()
+	if gosailConfig != nil {
+		// client
+		// keyExchanges
+		// ciphers
+		if gosailConfig.Client.NumLimit != 0 {
+			numLimit = gosailConfig.Client.NumLimit
+		}
+		if gosailConfig.Client.TimeLimit != 0 {
+			timeLimit = gosailConfig.Client.TimeLimit
+		}
+		// spinner
+		spinnerConfig = gosailConfig.Spin
+		// spinnerConfig.TimeOut = timeLimit
+		// login
+		if gosailConfig.Login.HostFile != "" {
+			hostFile = gosailConfig.Login.HostFile
+		}
+		if gosailConfig.Login.IpFile != "" {
+			ipFile = gosailConfig.Login.IpFile
+		}
+		if gosailConfig.Login.Username != "" {
+			username = gosailConfig.Login.Username
+		}
+		if gosailConfig.Login.Password != "" {
+			password = gosailConfig.Login.Password
+		}
+		if gosailConfig.Login.Port != 0 {
+			port = gosailConfig.Login.Port
+		} else {
+			port = 22
+		}
+
+	}
 }

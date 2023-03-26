@@ -34,6 +34,17 @@ func setModeArgs(c *grumble.Context) {
 	linuxMode = c.Flags.Bool("linuxmode")
 	jsonMode = c.Flags.Bool("jsonmode")
 	selection = c.Flags.Bool("selection")
+	// mode
+	if gosailConfig.Mode.JsonMode && !jsonMode {
+		jsonMode = gosailConfig.Mode.JsonMode
+	}
+	if gosailConfig.Mode.LinuxMode && !linuxMode {
+		linuxMode = gosailConfig.Mode.LinuxMode
+	}
+	if gosailConfig.Mode.Selection && !selection {
+		selection = gosailConfig.Mode.Selection
+	}
+	spinnerConfig.IsSelect = selection
 	if isK8s {
 		linuxMode = true
 	}

@@ -52,7 +52,8 @@ func exec() {
 		log.Error(err)
 		return
 	}
-	sshResults := cycle.Exec(clientConfig)
+	spinnerConfig.IsSelect = selection
+	sshResults := cycle.Exec(clientConfig, spinnerConfig)
 	cycle.ShowExecResult(clientConfig.SshHosts, sshResults, &jsonMode, &linuxMode)
 	if selection {
 		client.LoginHostByID(clientConfig.SshHosts, sshResults, "")

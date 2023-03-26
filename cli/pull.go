@@ -8,10 +8,11 @@ import (
 )
 
 var (
-	srcPath  string
-	destPath string
-	tar      bool
-	scp      bool
+	srcPath   string
+	destPath  string
+	tar       bool
+	scp       bool
+	pod_index int
 )
 
 func init() {
@@ -28,6 +29,7 @@ func init() {
 			f.Bool("", "scp", false, "pull file by scp")
 			f.String("", "src", "", "source path")
 			f.String("", "dest", ".", "destination path")
+			f.Int("", "index", -1, "pull file by pods' index")
 		},
 		Run: func(c *grumble.Context) error {
 			setPullArgs(c)
@@ -55,6 +57,7 @@ func setPullArgs(c *grumble.Context) {
 	destPath = getValue(c, "dest", ".").(string)
 	tar = c.Flags.Bool("tar")
 	scp = c.Flags.Bool("scp")
+	pod_index = c.Flags.Int("index")
 	cmdLine = ""
 }
 

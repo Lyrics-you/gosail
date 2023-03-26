@@ -59,7 +59,6 @@ func init() {
 	pullCmd.Flags().StringVarP(&destPath, "dest", "", "", "destination path")
 	pullCmd.Flags().BoolVarP(&scp, "scp", "", false, "pull file by scp")
 	pullCmd.Flags().BoolVarP(&tar, "tar", "", false, "tar pull's file")
-
 }
 func pull() {
 	clientConfig, err := cycle.GetClientConfig(keyExchanges, ciphers, cmdLine, cmdFile, hostLine, hostFile, ipLine, ipFile, username, password, key, port, numLimit, timeLimit, linuxMode)

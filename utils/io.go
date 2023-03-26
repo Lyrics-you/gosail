@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"gosail/model"
-	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -66,7 +65,7 @@ func SplitUserHostPath(str string) (user, host, path string) {
 }
 
 func GetByte(filepath string) ([]byte, error) {
-	result, err := ioutil.ReadFile(filepath)
+	result, err := os.ReadFile(filepath)
 	if err != nil {
 		// log.Errorf("read file %s error, %v", filepath, err)
 		return nil, err
@@ -87,7 +86,7 @@ func SplitStringLine(str string) []string {
 }
 
 func GetString(filepath string) ([]string, error) {
-	b, err := ioutil.ReadFile(filepath)
+	b, err := os.ReadFile(filepath)
 	if err != nil {
 		// log.Errorf("read file %s error, %v", filepath, err)
 		return nil, err
@@ -99,7 +98,7 @@ func GetString(filepath string) ([]string, error) {
 
 func GetJson(filePath string) (model.HostJson, error) {
 	var result model.HostJson
-	b, err := ioutil.ReadFile(filePath)
+	b, err := os.ReadFile(filePath)
 	if err != nil {
 		// log.Errorf("read file %s error, %v", filePath, err)
 		return result, err

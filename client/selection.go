@@ -38,6 +38,10 @@ func LoginHostByID(sshHosts []model.SSHHost, sshResult []model.RunResult, cmdLin
 func showHostsList(sshResult []model.RunResult) {
 	fmt.Println()
 	fmt.Println("✋Server List:")
+	if len(sshResult) == 0 {
+		fmt.Println("No No available servers!")
+		return
+	}
 	if len(sshResult) != 1 {
 		fmt.Printf("Enter the 0~%d to select the host, other input will exit!\n", len(sshResult)-1)
 	} else {
@@ -52,7 +56,6 @@ func showHostsList(sshResult []model.RunResult) {
 
 func selectHost() int {
 	var str string
-
 	fmt.Print("Input id : ")
 	fmt.Scanln(&str)
 

@@ -69,7 +69,8 @@ func k8sExec() {
 		Highlight: highlight,
 		CmdLine:   cmdLine,
 	}
-	sshResults := cycle.K8sExec(clientConfig, kubeConfig)
+	spinnerConfig.IsSelect = selection
+	sshResults := cycle.K8sExec(clientConfig, kubeConfig, spinnerConfig)
 	cycle.K8sShowResults(sshResults, kubeConfig, &jsonMode)
 	if selection {
 		client.LoginPodByID(kubeConfig, clientConfig.SshHosts, sshResults, kubeConfig.Shell)

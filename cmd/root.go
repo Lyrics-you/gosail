@@ -13,20 +13,21 @@ import (
 )
 
 var (
-	version      bool
-	username     string
-	password     string
-	key          string
-	port         int
-	ciphers      string
-	keyExchanges string
-	config       string
-	timeLimit    int
-	numLimit     int
-	linuxMode    bool
-	jsonMode     bool
-	selection    bool
-	clientConfig *model.ClientConfig = &model.ClientConfig{}
+	version       bool
+	username      string
+	password      string
+	key           string
+	port          int
+	ciphers       string
+	keyExchanges  string
+	config        string
+	timeLimit     int
+	numLimit      int
+	linuxMode     bool
+	jsonMode      bool
+	selection     bool
+	spinnerConfig *model.SpinConfig   = &model.SpinConfig{}
+	clientConfig  *model.ClientConfig = &model.ClientConfig{}
 )
 
 var (
@@ -58,6 +59,7 @@ You can also copy(pull or push) files by it.`,
 			return
 		}
 		if !version {
+			//todo: check``
 			grumble.Main(cli.Gosail)
 			fmt.Println("👌Finshed!")
 		} else {
@@ -85,6 +87,66 @@ func init() {
 }
 
 func Execute() {
+	//User specified -> Load configuration -> Defualt value
+	gosailConfig := cycle.GetGosailConfiguration()
+	// gConfig.PrintGosailConfiguration()
+	if gosailConfig != nil {
+		// client
+		// keyExchanges
+		// ciphers
+		if gosailConfig.Client.NumLimit != 0 {
+			numLimit = gosailConfig.Client.NumLimit
+		}
+		if gosailConfig.Client.TimeLimit != 0 {
+			timeLimit = gosailConfig.Client.TimeLimit
+		}
+		// spinner
+		spinnerConfig = gosailConfig.Spin
+		spinnerConfig.IsSelect = selection
+		// spinnerConfig.TimeOut = timeLimit
+		// login
+		if gosailConfig.Login.HostFile != "" {
+			hostFile = gosailConfig.Login.HostFile
+		}
+		if gosailConfig.Login.IpFile != "" {
+			ipFile = gosailConfig.Login.IpFile
+		}
+		if gosailConfig.Login.Username != "" {
+			username = gosailConfig.Login.Username
+		}
+		if gosailConfig.Login.Password != "" {
+			password = gosailConfig.Login.Password
+		}
+		if gosailConfig.Login.Port != 0 {
+			port = gosailConfig.Login.Port
+		}
+		// k8s
+		if gosailConfig.K8s.Namespace != "" {
+			namespace = gosailConfig.K8s.Namespace
+		}
+		if gosailConfig.K8s.AppName != "" {
+			app = gosailConfig.K8s.AppName
+		}
+		if gosailConfig.K8s.Container != "" {
+			container = gosailConfig.K8s.Container
+		}
+		if gosailConfig.K8s.Label != "" {
+			label = gosailConfig.K8s.Label
+		}
+		if gosailConfig.K8s.Shell != "" {
+			shell = gosailConfig.K8s.Shell
+		}
+		// mode
+		if gosailConfig.Mode.JsonMode {
+			jsonMode = gosailConfig.Mode.JsonMode
+		}
+		if gosailConfig.Mode.LinuxMode {
+			linuxMode = gosailConfig.Mode.LinuxMode
+		}
+		if gosailConfig.Mode.Selection {
+			selection = gosailConfig.Mode.Selection
+		}
+	}
 	rootCmd.Execute()
 }
 
@@ -94,7 +156,8 @@ func configExec() {
 		log.Error(err)
 		return
 	}
-	sshResults := cycle.Exec(clientConfig)
+	spinnerConfig.IsSelect = selection
+	sshResults := cycle.Exec(clientConfig, spinnerConfig)
 	cycle.ShowExecResult(clientConfig.SshHosts, sshResults, &jsonMode, &linuxMode)
 	if selection {
 		client.LoginHostByID(clientConfig.SshHosts, sshResults, "")

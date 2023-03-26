@@ -39,6 +39,10 @@ func LoginPodByID(kubeConfig *model.KubeConfig, sshHosts []model.SSHHost, sshRes
 func showPodList(sshResult []model.RunResult) {
 	fmt.Println()
 	fmt.Println("✋Pods List:")
+	if len(sshResult) == 0 {
+		fmt.Println("No No available pods!")
+		return
+	}
 	if len(sshResult) != 1 {
 		fmt.Printf("Enter the 0~%d to select the pod, other input will exit!\n", len(sshResult)-1)
 	} else {

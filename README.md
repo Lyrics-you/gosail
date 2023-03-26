@@ -20,6 +20,7 @@ gosail 是一个免费开源的批处理并发命令执行系统，旨在在多�
 - 适应窗口大小
 - 支持交互终端
 - 记录命令历史
+- 预配置文件
 
 ## 使用
 
@@ -395,6 +396,10 @@ C:\WINDOWS\System32\OpenSSH\scp.exe -r root@192.168.245.133:mergemultx1-86986bdd
 C:\WINDOWS\System32\OpenSSH\scp.exe -r root@192.168.245.133:mergemultx1-86986bdd8-r8zmv ./mergemultx/192.168.245.133/ Done!
 ```
 
+k8s pull中可以指定`--index`参数，拉取指定索引的index pod的文件
+
+`gosail login k8s pull "srcPath" "dstPath" --index=`
+
 ### push/upload
 
 k8s没有该命令
@@ -576,8 +581,62 @@ k8s的linuxmode为false
 
 
 
-## 提示
+## 预读取配置
 
-使用 gosail spinner : >))'>
+gosail 0.17.0之后支持读取默认配置，在gosail同级目录下的gosail.conf，预配置的文件可以减少参数的指定
+
+```ini
+[client]
+# second
+timeout_limit = 10
+number_limit = 10
+
+[spin]
+# 0:Tips 1:Move 2:Bar (default is 0)
+spin_type = 2
+# spin_tips = "wait, gosail is in progress ..."
+
+
+[login]
+host_file = ".\examples\host-list-k8s"
+# ip_file = ""
+username = "root"
+password = "qwerty"
+# prot = 22
+
+[k8s]
+namespace = "mergemultx"
+shell = sh
+# label = "app=mergemultx1"
+# app = "mergemultx1"
+# container = "mergemultx"
+
+
+[mode]
+json_mode = false
+linux_mode = false
+selection = false
+
+```
+
+[client]可以指定超时控制时间（秒）`timeout_limit`，并发宿主机数量`number_limit`
+
+[spin]可以指定gosail提示方式(0:文字提示，1:移动的小鱼，2:进度条)`spin_type`，以及文字提示下提示的文字内容`spin_tips`
+
+[login]可以指定`host_file`文件或者`ip_file`，登录用的用户名`username`，密码`password`，ssh端口`port`(默认22)
+
+[k8s]可以指定k8s默认宿主机文件可以在login指定,指定命名空间`namespace`，shell交互方式`shell`，以及`label`,`app`,`container`等
+
+[mode]可指定json输出模式`json_mode`，linux输出模式`linux_mode`，选择模式`selection`
+
+示例：
+
+`gosail login ecec -e "ls"`
+
+`gosail login k8s -c container exec -e "ls"`
+
+## 提示Spinner
+
+使用 gosail spinner : >))'>，可以通过在配置文件中指定提示方式
 
 在等待时候进行提示。

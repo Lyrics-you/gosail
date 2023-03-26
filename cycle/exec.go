@@ -9,12 +9,15 @@ import (
 	"gosail/utils"
 )
 
-func Exec(clientConfig *model.ClientConfig) []model.RunResult {
-	spinner.Spin.Start()
-	defer spinner.Spin.Stop()
-
+func Exec(clientConfig *model.ClientConfig, spinnerConfig *model.SpinConfig) []model.RunResult {
+	if spinnerConfig != nil {
+		// user spinner
+		spinner.Spin.Init(spinnerConfig)
+		spinner.Spin.SetTimeOut(clientConfig.TimeLimit)
+		spinner.Spin.Start()
+		defer spinner.Spin.Stop()
+	}
 	sshResults, _ := client.LimitShhWithGroup(clientConfig)
-
 	return sshResults
 }
 

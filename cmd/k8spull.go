@@ -9,6 +9,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	pod_index int
+)
 var k8spullCmd = &cobra.Command{
 	Aliases: []string{"download"},
 	Use:     "pull",
@@ -55,6 +58,7 @@ func init() {
 	k8spullCmd.Flags().StringVarP(&destPath, "dest", "", "", "destination path")
 	k8spullCmd.Flags().BoolVarP(&scp, "scp", "", false, "pull file by exec scp")
 	k8spullCmd.Flags().BoolVarP(&tar, "tar", "", false, "tar pull's file")
+	k8spullCmd.Flags().IntVarP(&pod_index, "index", "", -1, "pull file by pods' index")
 }
 
 func k8sPull() {
@@ -109,6 +113,12 @@ func k8sDownload() {
 		Highlight: highlight,
 		CmdLine:   cmdLine,
 	}
-	sftpResults := cycle.K8sDownload(clientConfig, kubeConfig, &srcPath, &destPath, &tar)
+
+	var sftpResults []model.RunResult
+	if pod_index < 0 {
+		sftpResults = cycle.K8sDownload(clientConfig, kubeConfig, &srcPath, &destPath, &tar)
+	} else {
+		sftpResults = cycle.K8sDownloadById(clientConfig, kubeConfig, &srcPath, &destPath, &tar, pod_index)
+	}
 	cycle.K8sShowResults(sftpResults, kubeConfig, &jsonMode)
 }
